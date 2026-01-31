@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nursing Word Guessing Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ffaf00, #ff5e00);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #ffe0b2;
+            margin-bottom: 15px;
+        }
+        
+        .hint-riddle {
+            text-align: center;
+            font-style: italic;
+            color: #fff9c4;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            font-size: 1.2rem;
+            border: 2px dashed rgba(255, 249, 196, 0.3);
+            flex-shrink: 0;
+        }
+        
+        .game-area {
+            display: flex;
+            gap: 30px;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .sandcastle-container {
+            flex: 0 0 320px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        
+        .sandcastle {
+            width: 280px;
+            height: 320px;
+            position: relative;
+            margin: 15px auto;
+        }
+        
+        .sandcastle-part {
+            position: absolute;
+            opacity: 1;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .castle-base {
+            width: 220px;
+            height: 100px;
+            bottom: 30px;
+            left: 30px;
+            background-color: #f4d03f;
+            border-radius: 10px 10px 0 0;
+            box-shadow: inset 0 -5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .castle-tower {
+            width: 80px;
+            height: 120px;
+            bottom: 130px;
+            left: 100px;
+            background-color: #f1c40f;
+            border-radius: 40px 40px 0 0;
+            box-shadow: inset 0 -5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .castle-tower-top {
+            width: 50px;
+            height: 30px;
+            bottom: 250px;
+            left: 115px;
+            background-color: #e67e22;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .tower-window {
+            width: 25px;
+            height: 25px;
+            background-color: #8b4513;
+            border-radius: 50%;
+            position: absolute;
+        }
+        
+        .window-left {
+            bottom: 170px;
+            left: 85px;
+        }
+        
+        .window-right {
+            bottom: 170px;
+            right: 85px;
+        }
+        
+        .castle-turret {
+            width: 50px;
+            height: 70px;
+            background-color: #f1c40f;
+            border-radius: 25px 25px 0 0;
+            position: absolute;
+        }
+        
+        .turret-left {
+            bottom: 130px;
+            left: 40px;
+        }
+        
+        .turret-right {
+            bottom: 130px;
+            right: 40px;
+        }
+        
+        .turret-top {
+            width: 30px;
+            height: 20px;
+            background-color: #e67e22;
+            border-radius: 10px 10px 0 0;
+            position: absolute;
+        }
+        
+        .turret-top-left {
+            bottom: 200px;
+            left: 50px;
+        }
+        
+        .turret-top-right {
+            bottom: 200px;
+            right: 50px;
+        }
+        
+        .castle-door {
+            width: 40px;
+            height: 60px;
+            bottom: 30px;
+            left: 120px;
+            background-color: #8b4513;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .castle-flag {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 30px solid #e74c3c;
+            position: absolute;
+            bottom: 280px;
+            left: 135px;
+            transform: rotate(180deg);
+        }
+        
+        .flag-pole {
+            width: 5px;
+            height: 40px;
+            background-color: #7f8c8d;
+            position: absolute;
+            bottom: 240px;
+            left: 142px;
+        }
+        
+        .sand-pile {
+            width: 250px;
+            height: 60px;
+            bottom: 0;
+            left: 15px;
+            background-color: #f4d03f;
+            border-radius: 50% 50% 0 0;
+            opacity: 0;
+        }
+        
+        .demolished {
+            opacity: 0 !important;
+            transform: translateY(20px) scale(0.8);
+        }
+        
+        .guesses-left {
+            text-align: center;
+            font-size: 1.4rem;
+            margin-top: 10px;
+        }
+        
+        .guesses-left span {
+            font-weight: bold;
+            color: #ffcc00;
+        }
+        
+        .game-controls {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        
+        .game-info {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .word-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+        
+        .word-display {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            align-items: center;
+        }
+        
+        .word-line {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: nowrap;
+        }
+        
+        .word-char {
+            display: inline-block;
+            min-width: 35px;
+            height: 50px;
+            text-align: center;
+            line-height: 50px;
+            font-size: 2rem;
+            font-weight: bold;
+            border-bottom: 4px solid rgba(255, 255, 255, 0.4);
+            margin: 0 3px;
+            color: white !important;
+        }
+        
+        .word-char.correct {
+            color: #000000 !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        
+        .word-char.revealed {
+            color: #ff4444 !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        
+        .wrong-letters {
+            min-height: 30px;
+            font-size: 1.2rem;
+            color: #ffcccb;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .category {
+            text-align: center;
+            font-size: 1.3rem;
+            color: #fff9c4;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .message {
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FFEB3B;
+            color: #333;
+            border: 3px solid #FFC107;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .message.win {
+            color: #2E7D32;
+            background-color: #C8E6C9;
+            border-color: #4CAF50;
+            animation: pulse-win 2s infinite;
+        }
+        
+        .message.lose {
+            color: #C62828;
+            background-color: #FFCDD2;
+            border-color: #F44336;
+            animation: pulse-lose 2s infinite;
+        }
+        
+        @keyframes pulse-win {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+        
+        @keyframes pulse-lose {
+            0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+        }
+        
+        .keyboard-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .key {
+            width: 45px;
+            height: 55px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.4rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .key:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        .key:disabled {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .key.correct {
+            background-color: #4CAF50;
+        }
+        
+        .key.wrong {
+            background-color: #f44336;
+        }
+        
+        .game-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .action-btn {
+            padding: 12px 25px;
+            background-color: #2d7dd2;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .action-btn:hover {
+            background-color: #1c6db0;
+            transform: translateY(-3px);
+        }
+        
+        .action-btn.reset {
+            background-color: #FF8C42;
+        }
+        
+        .action-btn.reset:hover {
+            background-color: #e67e3a;
+        }
+        
+        .instructions {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-top: 15px;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #ffcc00;
+        }
+        
+        /* Compact layout adjustments */
+        .compact-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        @media (max-width: 1200px) {
+            .game-area {
+                gap: 20px;
+            }
+            
+            .sandcastle-container {
+                flex: 0 0 280px;
+            }
+            
+            .sandcastle {
+                width: 240px;
+                height: 280px;
+            }
+            
+            .word-char {
+                min-width: 30px;
+                height: 45px;
+                line-height: 45px;
+                font-size: 1.8rem;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            body {
+                overflow-y: auto;
+            }
+            
+            .game-area {
+                flex-direction: column;
+            }
+            
+            .sandcastle-container {
+                flex: 0 0 auto;
+                width: 100%;
+            }
+            
+            .sandcastle {
+                width: 220px;
+                height: 260px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .key {
+                width: 40px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-height: 900px) {
+            body {
+                padding: 5px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2.4rem;
+                margin-bottom: 5px;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+            }
+            
+            .hint-riddle {
+                padding: 12px;
+                font-size: 1.1rem;
+                margin-bottom: 15px;
+            }
+            
+            .game-area {
+                gap: 20px;
+            }
+            
+            .word-char {
+                min-width: 30px;
+                height: 45px;
+                line-height: 45px;
+                font-size: 1.8rem;
+            }
+            
+            .key {
+                width: 40px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+            
+            .action-btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            
+            .instructions {
+                padding: 12px;
+                font-size: 0.95rem;
+            }
+        }
+        
+        @media (max-height: 800px) {
+            .word-char {
+                min-width: 28px;
+                height: 40px;
+                line-height: 40px;
+                font-size: 1.6rem;
+            }
+            
+            .key {
+                width: 38px;
+                height: 45px;
+                font-size: 1.2rem;
+            }
+            
+            .game-area {
+                gap: 15px;
+            }
+            
+            .word-container {
+                padding: 15px;
+                gap: 15px;
+            }
+            
+            .word-display {
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-umbrella-beach"></i> Nursing Competencies Game <i class="fas fa-umbrella-beach"></i></h1>
+            <p class="subtitle">Guess the nursing education concept before the sandcastle is demolished!</p>
+        </header>
+        
+        <div class="hint-riddle" id="hint-riddle">
+            <i class="fas fa-question-circle"></i> Hint Riddle:<br>
+            "Books tell the 'why,' but I show the 'how'—where future nurses meet the here and now. Not simulation, but living breath—what teaches skills close to death?"
+        </div>
+        
+        <div class="game-area">
+            <div class="sandcastle-container">
+                <h2>Your Sandcastle</h2>
+                <div class="sandcastle">
+                    <div class="sandcastle-part castle-base"></div>
+                    <div class="sandcastle-part castle-tower"></div>
+                    <div class="sandcastle-part castle-tower-top"></div>
+                    <div class="sandcastle-part tower-window window-left"></div>
+                    <div class="sandcastle-part tower-window window-right"></div>
+                    <div class="sandcastle-part castle-turret turret-left"></div>
+                    <div class="sandcastle-part castle-turret turret-right"></div>
+                    <div class="sandcastle-part turret-top turret-top-left"></div>
+                    <div class="sandcastle-part turret-top turret-top-right"></div>
+                    <div class="sandcastle-part castle-door"></div>
+                    <div class="sandcastle-part castle-flag"></div>
+                    <div class="sandcastle-part flag-pole"></div>
+                    <div class="sandcastle-part sand-pile"></div>
+                </div>
+                <div class="guesses-left">Wrong guesses: <span id="wrong-count">0</span> / 8</div>
+            </div>
+            
+            <div class="game-controls">
+                <div class="game-info">
+                    <div class="category" id="category">Category: Nursing Education</div>
+                    
+                    <div class="word-container">
+                        <div class="word-display" id="word-display">
+                            <!-- Word will be generated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="compact-section">
+                        <div class="wrong-letters" id="wrong-letters">Wrong letters: None yet</div>
+                        <div class="message" id="message"></div>
+                    </div>
+                </div>
+                
+                <div class="keyboard-container">
+                    <div class="keyboard" id="keyboard">
+                        <!-- Keyboard will be generated by JavaScript -->
+                    </div>
+                    
+                    <div class="game-buttons">
+                        <button class="action-btn reset" id="reset-btn">
+                            <i class="fas fa-redo-alt"></i> New Game
+                        </button>
+                        <button class="action-btn" id="hint-btn">
+                            <i class="fas fa-lightbulb"></i> Reveal Letter
+                        </button>
+                    </div>
+                    
+                    <div class="instructions">
+                        <h3>How to Play:</h3>
+                        <p>Guess the hidden phrase by clicking letters on the keyboard. Each wrong guess demolishes part of the sandcastle. You can make up to 8 wrong guesses before the sandcastle is completely demolished and you lose the game. Guess all the letters correctly to win! Use the riddle above as a hint to figure out the answer.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        let currentWord = 'REAL-WORLD SKILL PRACTICE';
+        let guessedLetters = [];
+        let wrongLetters = [];
+        let wrongGuesses = 0;
+        let maxWrongGuesses = 8;
+        let gameOver = false;
+        
+        // Split the phrase into three parts (with hyphen treated as part of first word)
+        const wordParts = ['REAL-WORLD', 'SKILL', 'PRACTICE'];
+        
+        // Sandcastle parts to demolish
+        const sandcastleParts = [
+            'castle-flag', 'flag-pole', 'turret-top-left', 'turret-top-right',
+            'window-left', 'window-right', 'castle-door', 'castle-tower-top',
+            'turret-left', 'turret-right', 'castle-tower', 'castle-base'
+        ];
+        
+        // Initialize the game
+        function initGame() {
+            // Reset game state
+            guessedLetters = [];
+            wrongLetters = [];
+            wrongGuesses = 0;
+            gameOver = false;
+            
+            // Update UI
+            updateWordDisplay();
+            updateWrongLetters();
+            updateSandcastle();
+            updateKeyboard();
+            
+            // Clear message
+            document.getElementById('message').textContent = '';
+            document.getElementById('message').className = 'message';
+            
+            // Update wrong guess count
+            document.getElementById('wrong-count').textContent = wrongGuesses;
+            
+            // Reset sandcastle parts
+            document.querySelectorAll('.sandcastle-part').forEach(part => {
+                part.classList.remove('demolished');
+                part.style.opacity = '1';
+            });
+            
+            // Hide sand pile
+            document.querySelector('.sand-pile').style.opacity = '0';
+        }
+        
+        // Update the displayed word with each word on its own line
+        function updateWordDisplay() {
+            const wordDisplay = document.getElementById('word-display');
+            wordDisplay.innerHTML = '';
+            
+            // Create a line for each word
+            wordParts.forEach(word => {
+                const wordLine = document.createElement('div');
+                wordLine.className = 'word-line';
+                
+                for (let i = 0; i < word.length; i++) {
+                    const char = word[i];
+                    
+                    // Add letter
+                    const charElement = document.createElement('div');
+                    charElement.className = 'word-char';
+                    
+                    if (guessedLetters.includes(char) || char === '-') {
+                        charElement.textContent = char;
+                        // If game is won, make letters black
+                        if (gameOver && checkWinCondition()) {
+                            charElement.classList.add('correct');
+                        } else {
+                            charElement.style.color = '#ffffff';
+                        }
+                    } else {
+                        charElement.textContent = '_';
+                        charElement.style.color = '#ffffff';
+                    }
+                    
+                    wordLine.appendChild(charElement);
+                }
+                
+                wordDisplay.appendChild(wordLine);
+            });
+            
+            // Check if the player has won
+            if (checkWinCondition() && !gameOver) {
+                gameOver = true;
+                document.getElementById('message').textContent = 'Excellent! You identified the nursing education concept!';
+                document.getElementById('message').className = 'message win';
+                disableAllKeys();
+                
+                // Make all letters black when won
+                const wordChars = document.querySelectorAll('.word-char');
+                wordChars.forEach(char => {
+                    if (char.textContent !== '_') {
+                        char.classList.add('correct');
+                    }
+                });
+            }
+        }
+        
+        // Check win condition
+        function checkWinCondition() {
+            const cleanWord = currentWord.replace(/-/g, '');
+            for (let char of cleanWord) {
+                if (char !== ' ' && !guessedLetters.includes(char)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        // Update the wrong letters display
+        function updateWrongLetters() {
+            const wrongLettersElement = document.getElementById('wrong-letters');
+            if (wrongLetters.length === 0) {
+                wrongLettersElement.textContent = 'Wrong letters: None yet';
+            } else {
+                wrongLettersElement.textContent = `Wrong letters: ${wrongLetters.join(', ')}`;
+            }
+        }
+        
+        // Update the sandcastle based on wrong guesses
+        function updateSandcastle() {
+            // Show sand pile when castle is demolished
+            if (wrongGuesses >= maxWrongGuesses) {
+                document.querySelector('.sand-pile').style.opacity = '1';
+            }
+            
+            // Demolish sandcastle parts based on wrong guesses
+            if (wrongGuesses >= 1) document.querySelector('.castle-flag').classList.add('demolished');
+            if (wrongGuesses >= 2) document.querySelector('.flag-pole').classList.add('demolished');
+            if (wrongGuesses >= 3) document.querySelector('.turret-top-left').classList.add('demolished');
+            if (wrongGuesses >= 4) document.querySelector('.turret-top-right').classList.add('demolished');
+            if (wrongGuesses >= 5) {
+                document.querySelector('.window-left').classList.add('demolished');
+                document.querySelector('.window-right').classList.add('demolished');
+            }
+            if (wrongGuesses >= 6) document.querySelector('.castle-door').classList.add('demolished');
+            if (wrongGuesses >= 7) document.querySelector('.castle-tower-top').classList.add('demolished');
+            if (wrongGuesses >= 8) {
+                document.querySelector('.turret-left').classList.add('demolished');
+                document.querySelector('.turret-right').classList.add('demolished');
+            }
+            if (wrongGuesses >= 9) document.querySelector('.castle-tower').classList.add('demolished');
+            if (wrongGuesses >= 10) document.querySelector('.castle-base').classList.add('demolished');
+        }
+        
+        // Create the keyboard
+        function createKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            keyboard.innerHTML = '';
+            
+            // Create keys for A-Z
+            for (let i = 65; i <= 90; i++) {
+                const letter = String.fromCharCode(i);
+                const key = document.createElement('button');
+                key.className = 'key';
+                key.textContent = letter;
+                key.dataset.letter = letter;
+                key.addEventListener('click', () => handleGuess(letter));
+                keyboard.appendChild(key);
+            }
+        }
+        
+        // Update the keyboard based on guessed letters
+        function updateKeyboard() {
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => {
+                const letter = key.dataset.letter;
+                
+                if (guessedLetters.includes(letter) || wrongLetters.includes(letter)) {
+                    key.disabled = true;
+                    
+                    if (currentWord.includes(letter)) {
+                        key.classList.add('correct');
+                    } else {
+                        key.classList.add('wrong');
+                    }
+                } else {
+                    key.disabled = false;
+                    key.classList.remove('correct', 'wrong');
+                }
+            });
+        }
+        
+        // Handle a letter guess
+        function handleGuess(letter) {
+            if (gameOver) return;
+            
+            // Check if the letter was already guessed
+            if (guessedLetters.includes(letter) || wrongLetters.includes(letter)) {
+                return;
+            }
+            
+            // Check if the letter is in the word
+            if (currentWord.includes(letter)) {
+                // Correct guess
+                guessedLetters.push(letter);
+            } else {
+                // Wrong guess
+                wrongLetters.push(letter);
+                wrongGuesses++;
+                
+                // Update wrong guess count
+                document.getElementById('wrong-count').textContent = wrongGuesses;
+                
+                // Check if the player has lost
+                if (wrongGuesses >= maxWrongGuesses) {
+                    gameOver = true;
+                    document.getElementById('message').textContent = `Game Over! The answer is: REAL-WORLD SKILL PRACTICE`;
+                    document.getElementById('message').className = 'message lose';
+                    disableAllKeys();
+                    
+                    // Reveal all letters when lost and make them red
+                    const wordChars = document.querySelectorAll('.word-char');
+                    let charIndex = 0;
+                    wordParts.forEach(word => {
+                        for (let i = 0; i < word.length; i++) {
+                            wordChars[charIndex].textContent = word[i];
+                            wordChars[charIndex].classList.add('revealed');
+                            charIndex++;
+                        }
+                    });
+                }
+            }
+            
+            // Update the UI
+            updateWordDisplay();
+            updateWrongLetters();
+            updateSandcastle();
+            updateKeyboard();
+        }
+        
+        // Disable all keyboard keys
+        function disableAllKeys() {
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => {
+                key.disabled = true;
+            });
+        }
+        
+        // Provide a hint (reveal a random letter)
+        function provideHint() {
+            if (gameOver) return;
+            
+            // Find letters that haven't been guessed yet (excluding spaces and hyphens)
+            const unguessedLetters = [];
+            for (let letter of currentWord) {
+                if (letter !== ' ' && letter !== '-' && !guessedLetters.includes(letter) && !unguessedLetters.includes(letter)) {
+                    unguessedLetters.push(letter);
+                }
+            }
+            
+            // If all letters are guessed, no hint needed
+            if (unguessedLetters.length === 0) return;
+            
+            // Select a random unguessed letter
+            const hintLetter = unguessedLetters[Math.floor(Math.random() * unguessedLetters.length)];
+            
+            // Add it to guessed letters
+            guessedLetters.push(hintLetter);
+            
+            // Update the UI
+            updateWordDisplay();
+            updateKeyboard();
+            
+            // Show a message
+            document.getElementById('message').textContent = `Hint revealed: "${hintLetter}"`;
+            document.getElementById('message').className = 'message';
+            
+            // Remove the message after 2 seconds
+            setTimeout(() => {
+                if (!gameOver) {
+                    document.getElementById('message').textContent = '';
+                    document.getElementById('message').className = 'message';
+                }
+            }, 2000);
+        }
+        
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Create the keyboard
+            createKeyboard();
+            
+            // Initialize the game
+            initGame();
+            
+            // Add event listeners to buttons
+            document.getElementById('reset-btn').addEventListener('click', initGame);
+            document.getElementById('hint-btn').addEventListener('click', provideHint);
+            
+            // Add keyboard event listener for letter keys
+            document.addEventListener('keydown', (e) => {
+                // Only process letter keys
+                if (e.keyCode >= 65 && e.keyCode <= 90) {
+                    const letter = e.key.toUpperCase();
+                    handleGuess(letter);
+                }
+                
+                // Spacebar for new game
+                if (e.keyCode === 32 && gameOver) {
+                    initGame();
+                }
+                
+                // H key for hint
+                if (e.keyCode === 72 && !gameOver) {
+                    provideHint();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

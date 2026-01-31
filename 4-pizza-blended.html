@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nursing Word Guessing Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #fff3e0;
+            margin-bottom: 15px;
+        }
+        
+        .hint-riddle {
+            text-align: center;
+            font-style: italic;
+            color: #fff9c4;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            font-size: 1.2rem;
+            border: 2px dashed rgba(255, 249, 196, 0.3);
+            flex-shrink: 0;
+        }
+        
+        .game-area {
+            display: flex;
+            gap: 30px;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .pizza-container {
+            flex: 0 0 320px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .pizza {
+            width: 280px;
+            height: 320px;
+            position: relative;
+            margin: 15px auto;
+        }
+        
+        .pizza-base {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            margin: 30px auto;
+        }
+        
+        .pizza-canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+        
+        .pizza-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .pizza-shadow {
+            width: 260px;
+            height: 260px;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            position: absolute;
+            top: 5px;
+            left: 0;
+        }
+        
+        .bite-marker {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ff6b6b;
+            font-weight: bold;
+            font-size: 1.4rem;
+            z-index: 20;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+        
+        .bite-marker.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .bite1 { top: 10px; left: 105px; }
+        .bite2 { top: 50px; left: 175px; }
+        .bite3 { top: 110px; left: 205px; }
+        .bite4 { top: 170px; left: 175px; }
+        .bite5 { top: 210px; left: 105px; }
+        .bite6 { top: 170px; left: 35px; }
+        .bite7 { top: 110px; left: 5px; }
+        .bite8 { top: 50px; left: 35px; }
+        
+        .pizza-empty {
+            width: 260px;
+            height: 260px;
+            margin: 30px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        .pizza-empty.visible {
+            opacity: 1;
+        }
+        
+        .empty-plate {
+            width: 200px;
+            height: 200px;
+            background-color: #f8f8f8;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+            border: 3px solid #ddd;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            color: #ccc;
+        }
+        
+        .empty-text {
+            margin-top: 15px;
+            font-size: 1.3rem;
+            color: #fff9c4;
+            text-align: center;
+        }
+        
+        .guesses-left {
+            text-align: center;
+            font-size: 1.4rem;
+            margin-top: 10px;
+        }
+        
+        .guesses-left span {
+            font-weight: bold;
+            color: #ffcc00;
+        }
+        
+        .game-controls {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        
+        .game-info {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .word-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+        
+        .word-display {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            align-items: center;
+        }
+        
+        .word-line {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: nowrap;
+        }
+        
+        .word-char {
+            display: inline-block;
+            min-width: 35px;
+            height: 50px;
+            text-align: center;
+            line-height: 50px;
+            font-size: 2rem;
+            font-weight: bold;
+            border-bottom: 4px solid rgba(255, 255, 255, 0.4);
+            margin: 0 3px;
+            color: white !important;
+        }
+        
+        .word-char.correct {
+            color: #000000 !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        
+        .word-char.revealed {
+            color: #ff4444 !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        
+        .wrong-letters {
+            min-height: 30px;
+            font-size: 1.2rem;
+            color: #ffcccb;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .category {
+            text-align: center;
+            font-size: 1.3rem;
+            color: #fff9c4;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .message {
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FFEB3B;
+            color: #333;
+            border: 3px solid #FFC107;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .message.win {
+            color: #2E7D32;
+            background-color: #C8E6C9;
+            border-color: #4CAF50;
+            animation: pulse-win 2s infinite;
+        }
+        
+        .message.lose {
+            color: #C62828;
+            background-color: #FFCDD2;
+            border-color: #F44336;
+            animation: pulse-lose 2s infinite;
+        }
+        
+        @keyframes pulse-win {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+        
+        @keyframes pulse-lose {
+            0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+        }
+        
+        .keyboard-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .key {
+            width: 45px;
+            height: 55px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.4rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .key:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        .key:disabled {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .key.correct {
+            background-color: #4CAF50;
+        }
+        
+        .key.wrong {
+            background-color: #f44336;
+        }
+        
+        .game-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .action-btn {
+            padding: 12px 25px;
+            background-color: #2d7dd2;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .action-btn:hover {
+            background-color: #1c6db0;
+            transform: translateY(-3px);
+        }
+        
+        .action-btn.reset {
+            background-color: #FF8C42;
+        }
+        
+        .action-btn.reset:hover {
+            background-color: #e67e3a;
+        }
+        
+        .instructions {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-top: 15px;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #ffcc00;
+        }
+        
+        /* Compact layout adjustments */
+        .compact-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        @media (max-width: 1200px) {
+            .game-area {
+                gap: 20px;
+            }
+            
+            .pizza-container {
+                flex: 0 0 280px;
+            }
+            
+            .pizza {
+                width: 240px;
+                height: 280px;
+            }
+            
+            .pizza-base, .pizza-shadow, .pizza-empty {
+                width: 220px;
+                height: 220px;
+            }
+            
+            .word-char {
+                min-width: 30px;
+                height: 45px;
+                line-height: 45px;
+                font-size: 1.8rem;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            body {
+                overflow-y: auto;
+            }
+            
+            .game-area {
+                flex-direction: column;
+            }
+            
+            .pizza-container {
+                flex: 0 0 auto;
+                width: 100%;
+            }
+            
+            .pizza {
+                width: 220px;
+                height: 260px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .key {
+                width: 40px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-height: 900px) {
+            body {
+                padding: 5px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2.4rem;
+                margin-bottom: 5px;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+            }
+            
+            .hint-riddle {
+                padding: 12px;
+                font-size: 1.1rem;
+                margin-bottom: 15px;
+            }
+            
+            .game-area {
+                gap: 20px;
+            }
+            
+            .word-char {
+                min-width: 30px;
+                height: 45px;
+                line-height: 45px;
+                font-size: 1.8rem;
+            }
+            
+            .key {
+                width: 40px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+            
+            .action-btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            
+            .instructions {
+                padding: 12px;
+                font-size: 0.95rem;
+            }
+        }
+        
+        @media (max-height: 800px) {
+            .word-char {
+                min-width: 28px;
+                height: 40px;
+                line-height: 40px;
+                font-size: 1.6rem;
+            }
+            
+            .key {
+                width: 38px;
+                height: 45px;
+                font-size: 1.2rem;
+            }
+            
+            .game-area {
+                gap: 15px;
+            }
+            
+            .word-container {
+                padding: 15px;
+                gap: 15px;
+            }
+            
+            .word-display {
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-pizza-slice"></i> Nursing Competencies Game <i class="fas fa-pizza-slice"></i></h1>
+            <p class="subtitle">Guess the nursing education concept before the pizza is completely eaten!</p>
+        </header>
+        
+        <div class="hint-riddle" id="hint-riddle">
+            <i class="fas fa-question-circle"></i> Hint Riddle:<br>
+            "I'm neither fully here nor there—a classroom-screen fusion, both everywhere. Theory online, practice in sight—what learning blends the day and night?"
+        </div>
+        
+        <div class="game-area">
+            <div class="pizza-container">
+                <h2>Your Pizza</h2>
+                <div class="pizza">
+                    <div class="pizza-shadow"></div>
+                    <div class="pizza-base">
+                        <div class="pizza-canvas-container">
+                            <canvas id="pizzaCanvas" class="pizza-canvas"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Bite markers -->
+                    <div class="bite-marker bite1">1</div>
+                    <div class="bite-marker bite2">2</div>
+                    <div class="bite-marker bite3">3</div>
+                    <div class="bite-marker bite4">4</div>
+                    <div class="bite-marker bite5">5</div>
+                    <div class="bite-marker bite6">6</div>
+                    <div class="bite-marker bite7">7</div>
+                    <div class="bite-marker bite8">8</div>
+                    
+                    <!-- Empty plate when pizza is gone -->
+                    <div class="pizza-empty" id="pizza-empty">
+                        <div class="empty-plate">
+                            <i class="fas fa-utensils empty-icon"></i>
+                        </div>
+                        <div class="empty-text">Pizza eaten!</div>
+                    </div>
+                </div>
+                <div class="guesses-left">Bites taken: <span id="wrong-count">0</span> / 8</div>
+            </div>
+            
+            <div class="game-controls">
+                <div class="game-info">
+                    <div class="category" id="category">Category: Nursing Education</div>
+                    
+                    <div class="word-container">
+                        <div class="word-display" id="word-display">
+                            <!-- Word will be generated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="compact-section">
+                        <div class="wrong-letters" id="wrong-letters">Wrong letters: None yet</div>
+                        <div class="message" id="message"></div>
+                    </div>
+                </div>
+                
+                <div class="keyboard-container">
+                    <div class="keyboard" id="keyboard">
+                        <!-- Keyboard will be generated by JavaScript -->
+                    </div>
+                    
+                    <div class="game-buttons">
+                        <button class="action-btn reset" id="reset-btn">
+                            <i class="fas fa-redo-alt"></i> New Game
+                        </button>
+                        <button class="action-btn" id="hint-btn">
+                            <i class="fas fa-lightbulb"></i> Reveal Letter
+                        </button>
+                    </div>
+                    
+                    <div class="instructions">
+                        <h3>How to Play:</h3>
+                        <p>Guess the hidden phrase by clicking letters on the keyboard. Each wrong guess takes a bite out of the pizza. You can make up to 8 wrong guesses before the pizza is completely eaten and you lose the game. Guess all the letters correctly to win! Use the riddle above as a hint to figure out the answer.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        let currentWord = 'HYBRID EDUCATION';
+        let guessedLetters = [];
+        let wrongLetters = [];
+        let wrongGuesses = 0;
+        let maxWrongGuesses = 8;
+        let gameOver = false;
+        let canvas, ctx;
+        
+        // Split the phrase into two words
+        const wordParts = ['HYBRID', 'EDUCATION'];
+        
+        // Bite positions (angles in radians) - adjusted for larger bites
+        const bitePositions = [
+            {angle: Math.PI * 1.5, distance: 70},   // Top center
+            {angle: Math.PI * 0.25, distance: 70},  // Top-right
+            {angle: Math.PI * 0, distance: 70},     // Right center
+            {angle: Math.PI * 1.75, distance: 70},  // Bottom-right
+            {angle: Math.PI * 1.5, distance: 40},   // Bottom center (closer to center)
+            {angle: Math.PI * 1.25, distance: 70},  // Bottom-left
+            {angle: Math.PI, distance: 70},         // Left center
+            {angle: Math.PI * 0.75, distance: 70}   // Top-left
+        ];
+        
+        // Initialize the game
+        function initGame() {
+            // Reset game state
+            guessedLetters = [];
+            wrongLetters = [];
+            wrongGuesses = 0;
+            gameOver = false;
+            
+            // Update UI
+            updateWordDisplay();
+            updateWrongLetters();
+            updatePizza();
+            updateKeyboard();
+            
+            // Clear message
+            document.getElementById('message').textContent = '';
+            document.getElementById('message').className = 'message';
+            
+            // Update wrong guess count
+            document.getElementById('wrong-count').textContent = wrongGuesses;
+            
+            // Hide bite markers
+            document.querySelectorAll('.bite-marker').forEach(marker => {
+                marker.classList.remove('visible');
+            });
+            
+            // Hide empty plate
+            document.getElementById('pizza-empty').classList.remove('visible');
+            
+            // Draw fresh pizza
+            drawPizza();
+        }
+        
+        // Draw the pizza on canvas
+        function drawPizza() {
+            if (!canvas || !ctx) return;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw pizza crust (outer circle)
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 120, 0, Math.PI * 2);
+            ctx.fillStyle = '#f1c27d';
+            ctx.fill();
+            ctx.strokeStyle = '#d4a574';
+            ctx.lineWidth = 8;
+            ctx.stroke();
+            
+            // Draw pizza sauce
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 110, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff6b6b';
+            ctx.fill();
+            
+            // Draw cheese
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 105, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffd700';
+            ctx.globalAlpha = 0.8;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            
+            // Draw toppings
+            drawToppings();
+            
+            // Draw bites taken
+            drawBites();
+        }
+        
+        // Draw pizza toppings
+        function drawToppings() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            // Draw pepperonis
+            const pepperoniPositions = [
+                {x: centerX, y: centerY - 60},
+                {x: centerX + 40, y: centerY - 40},
+                {x: centerX + 60, y: centerY},
+                {x: centerX + 40, y: centerY + 40},
+                {x: centerX, y: centerY + 60},
+                {x: centerX - 40, y: centerY + 40},
+                {x: centerX - 60, y: centerY},
+                {x: centerX - 40, y: centerY - 40},
+                {x: centerX + 20, y: centerY - 20},
+                {x: centerX - 20, y: centerY + 20},
+                {x: centerX + 30, y: centerY + 30},
+                {x: centerX - 30, y: centerY - 30}
+            ];
+            
+            pepperoniPositions.forEach(pos => {
+                if (!isPositionBitten(pos.x, pos.y)) {
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2);
+                    ctx.fillStyle = '#c0392b';
+                    ctx.fill();
+                    ctx.strokeStyle = '#a93226';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            });
+            
+            // Draw mushrooms
+            const mushroomPositions = [
+                {x: centerX + 25, y: centerY - 35},
+                {x: centerX - 25, y: centerY + 35},
+                {x: centerX + 35, y: centerY + 25},
+                {x: centerX - 35, y: centerY - 25}
+            ];
+            
+            mushroomPositions.forEach(pos => {
+                if (!isPositionBitten(pos.x, pos.y)) {
+                    // Mushroom cap
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, 12, 0, Math.PI * 2);
+                    ctx.fillStyle = '#f5f5f5';
+                    ctx.fill();
+                    
+                    // Mushroom stem
+                    ctx.beginPath();
+                    ctx.rect(pos.x - 4, pos.y + 5, 8, 10);
+                    ctx.fillStyle = '#d7ccc8';
+                    ctx.fill();
+                }
+            });
+            
+            // Draw green peppers
+            const greenPepperPositions = [
+                {x: centerX + 35, y: centerY - 25},
+                {x: centerX - 35, y: centerY},
+                {x: centerX + 15, y: centerY + 45},
+                {x: centerX - 15, y: centerY - 45}
+            ];
+            
+            greenPepperPositions.forEach(pos => {
+                if (!isPositionBitten(pos.x, pos.y)) {
+                    ctx.save();
+                    ctx.translate(pos.x, pos.y);
+                    ctx.rotate(Math.PI / 4);
+                    ctx.beginPath();
+                    ctx.rect(-10, -10, 20, 20);
+                    ctx.fillStyle = '#27ae60';
+                    ctx.fill();
+                    ctx.restore();
+                }
+            });
+            
+            // Draw olives
+            const olivePositions = [
+                {x: centerX - 15, y: centerY - 45},
+                {x: centerX + 55, y: centerY + 15},
+                {x: centerX - 35, y: centerY + 25},
+                {x: centerX + 25, y: centerY + 55},
+                {x: centerX + 45, y: centerY - 15},
+                {x: centerX - 25, y: centerY - 55}
+            ];
+            
+            olivePositions.forEach(pos => {
+                if (!isPositionBitten(pos.x, pos.y)) {
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = '#2c3e50';
+                    ctx.fill();
+                }
+            });
+        }
+        
+        // Check if a position has been bitten
+        function isPositionBitten(x, y) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            for (let i = 0; i < wrongGuesses; i++) {
+                const bite = bitePositions[i];
+                if (!bite) continue;
+                
+                const biteX = centerX + Math.cos(bite.angle) * bite.distance;
+                const biteY = centerY + Math.sin(bite.angle) * bite.distance;
+                
+                // Calculate distance from bite center
+                const distance = Math.sqrt(Math.pow(x - biteX, 2) + Math.pow(y - biteY, 2));
+                
+                // If within bite radius (37.5px - 50% larger than 25px), position is bitten
+                if (distance < 37.5) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        // Draw bites taken out of the pizza
+        function drawBites() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            for (let i = 0; i < wrongGuesses; i++) {
+                const bite = bitePositions[i];
+                if (!bite) continue;
+                
+                const biteX = centerX + Math.cos(bite.angle) * bite.distance;
+                const biteY = centerY + Math.sin(bite.angle) * bite.distance;
+                
+                // Create a bite shape - 50% larger (37.5px radius instead of 25px)
+                ctx.save();
+                ctx.beginPath();
+                
+                // Draw a circular bite - 50% larger
+                ctx.arc(biteX, biteY, 37.5, 0, Math.PI * 2);
+                
+                // Use destination-out to "erase" the bite
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+        
+        // Update the displayed word with each word on its own line
+        function updateWordDisplay() {
+            const wordDisplay = document.getElementById('word-display');
+            wordDisplay.innerHTML = '';
+            
+            // Create a line for each word
+            wordParts.forEach(word => {
+                const wordLine = document.createElement('div');
+                wordLine.className = 'word-line';
+                
+                for (let i = 0; i < word.length; i++) {
+                    const char = word[i];
+                    
+                    // Add letter
+                    const charElement = document.createElement('div');
+                    charElement.className = 'word-char';
+                    
+                    if (guessedLetters.includes(char)) {
+                        charElement.textContent = char;
+                        // If game is won, make letters black
+                        if (gameOver && checkWinCondition()) {
+                            charElement.classList.add('correct');
+                        } else {
+                            charElement.style.color = '#ffffff';
+                        }
+                    } else {
+                        charElement.textContent = '_';
+                        charElement.style.color = '#ffffff';
+                    }
+                    
+                    wordLine.appendChild(charElement);
+                }
+                
+                wordDisplay.appendChild(wordLine);
+            });
+            
+            // Check if the player has won
+            if (checkWinCondition() && !gameOver) {
+                gameOver = true;
+                document.getElementById('message').textContent = 'Excellent! You identified the nursing education concept!';
+                document.getElementById('message').className = 'message win';
+                disableAllKeys();
+                
+                // Make all letters black when won
+                const wordChars = document.querySelectorAll('.word-char');
+                wordChars.forEach(char => {
+                    if (char.textContent !== '_') {
+                        char.classList.add('correct');
+                    }
+                });
+            }
+        }
+        
+        // Check win condition
+        function checkWinCondition() {
+            return !currentWord.split('').some(char => {
+                return char !== ' ' && !guessedLetters.includes(char);
+            });
+        }
+        
+        // Update the wrong letters display
+        function updateWrongLetters() {
+            const wrongLettersElement = document.getElementById('wrong-letters');
+            if (wrongLetters.length === 0) {
+                wrongLettersElement.textContent = 'Wrong letters: None yet';
+            } else {
+                wrongLettersElement.textContent = `Wrong letters: ${wrongLetters.join(', ')}`;
+            }
+        }
+        
+        // Update the pizza based on wrong guesses
+        function updatePizza() {
+            // Show bite markers for taken bites
+            for (let i = 0; i < wrongGuesses; i++) {
+                const biteMarker = document.querySelector(`.bite${i + 1}`);
+                if (biteMarker) {
+                    biteMarker.classList.add('visible');
+                }
+            }
+            
+            // Redraw pizza with bites
+            drawPizza();
+            
+            // Show empty plate when pizza is gone
+            if (wrongGuesses >= maxWrongGuesses) {
+                document.getElementById('pizza-empty').classList.add('visible');
+            }
+        }
+        
+        // Create the keyboard
+        function createKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            keyboard.innerHTML = '';
+            
+            // Create keys for A-Z
+            for (let i = 65; i <= 90; i++) {
+                const letter = String.fromCharCode(i);
+                const key = document.createElement('button');
+                key.className = 'key';
+                key.textContent = letter;
+                key.dataset.letter = letter;
+                key.addEventListener('click', () => handleGuess(letter));
+                keyboard.appendChild(key);
+            }
+        }
+        
+        // Update the keyboard based on guessed letters
+        function updateKeyboard() {
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => {
+                const letter = key.dataset.letter;
+                
+                if (guessedLetters.includes(letter) || wrongLetters.includes(letter)) {
+                    key.disabled = true;
+                    
+                    if (currentWord.includes(letter)) {
+                        key.classList.add('correct');
+                    } else {
+                        key.classList.add('wrong');
+                    }
+                } else {
+                    key.disabled = false;
+                    key.classList.remove('correct', 'wrong');
+                }
+            });
+        }
+        
+        // Handle a letter guess
+        function handleGuess(letter) {
+            if (gameOver) return;
+            
+            // Check if the letter was already guessed
+            if (guessedLetters.includes(letter) || wrongLetters.includes(letter)) {
+                return;
+            }
+            
+            // Check if the letter is in the word
+            if (currentWord.includes(letter)) {
+                // Correct guess
+                guessedLetters.push(letter);
+            } else {
+                // Wrong guess
+                wrongLetters.push(letter);
+                wrongGuesses++;
+                
+                // Update wrong guess count
+                document.getElementById('wrong-count').textContent = wrongGuesses;
+                
+                // Check if the player has lost
+                if (wrongGuesses >= maxWrongGuesses) {
+                    gameOver = true;
+                    document.getElementById('message').textContent = `Game Over! The answer is: HYBRID EDUCATION`;
+                    document.getElementById('message').className = 'message lose';
+                    disableAllKeys();
+                    
+                    // Reveal all letters when lost and make them red
+                    const wordChars = document.querySelectorAll('.word-char');
+                    let charIndex = 0;
+                    wordParts.forEach(word => {
+                        for (let i = 0; i < word.length; i++) {
+                            wordChars[charIndex].textContent = word[i];
+                            wordChars[charIndex].classList.add('revealed');
+                            charIndex++;
+                        }
+                    });
+                }
+            }
+            
+            // Update the UI
+            updateWordDisplay();
+            updateWrongLetters();
+            updatePizza();
+            updateKeyboard();
+        }
+        
+        // Disable all keyboard keys
+        function disableAllKeys() {
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => {
+                key.disabled = true;
+            });
+        }
+        
+        // Provide a hint (reveal a random letter)
+        function provideHint() {
+            if (gameOver) return;
+            
+            // Find letters that haven't been guessed yet (excluding spaces)
+            const unguessedLetters = [];
+            for (let letter of currentWord) {
+                if (letter !== ' ' && !guessedLetters.includes(letter) && !unguessedLetters.includes(letter)) {
+                    unguessedLetters.push(letter);
+                }
+            }
+            
+            // If all letters are guessed, no hint needed
+            if (unguessedLetters.length === 0) return;
+            
+            // Select a random unguessed letter
+            const hintLetter = unguessedLetters[Math.floor(Math.random() * unguessedLetters.length)];
+            
+            // Add it to guessed letters
+            guessedLetters.push(hintLetter);
+            
+            // Update the UI
+            updateWordDisplay();
+            updateKeyboard();
+            
+            // Show a message
+            document.getElementById('message').textContent = `Hint revealed: "${hintLetter}"`;
+            document.getElementById('message').className = 'message';
+            
+            // Remove the message after 2 seconds
+            setTimeout(() => {
+                if (!gameOver) {
+                    document.getElementById('message').textContent = '';
+                    document.getElementById('message').className = 'message';
+                }
+            }, 2000);
+        }
+        
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize canvas
+            canvas = document.getElementById('pizzaCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = 260;
+            canvas.height = 260;
+            
+            // Create the keyboard
+            createKeyboard();
+            
+            // Initialize the game
+            initGame();
+            
+            // Add event listeners to buttons
+            document.getElementById('reset-btn').addEventListener('click', initGame);
+            document.getElementById('hint-btn').addEventListener('click', provideHint);
+            
+            // Add keyboard event listener for letter keys
+            document.addEventListener('keydown', (e) => {
+                // Only process letter keys
+                if (e.keyCode >= 65 && e.keyCode <= 90) {
+                    const letter = e.key.toUpperCase();
+                    handleGuess(letter);
+                }
+                
+                // Spacebar for new game
+                if (e.keyCode === 32 && gameOver) {
+                    initGame();
+                }
+                
+                // H key for hint
+                if (e.keyCode === 72 && !gameOver) {
+                    provideHint();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

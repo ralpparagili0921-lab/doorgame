@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nursing Word Guessing Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #bbbbff;
+            margin-bottom: 15px;
+        }
+        
+        .hint-riddle {
+            text-align: center;
+            font-style: italic;
+            color: #ffd700;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            font-size: 1.2rem;
+            border: 2px dashed rgba(255, 215, 0, 0.3);
+            flex-shrink: 0;
+        }
+        
+        .game-area {
+            display: flex;
+            gap: 30px;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .hourglass-container {
+            flex: 0 0 350px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        
+        .hourglass-scene {
+            width: 310px;
+            height: 350px;
+            position: relative;
+            margin: 15px auto;
+        }
+        
+        .hourglass-base {
+            position: relative;
+            width: 290px;
+            height: 290px;
+            margin: 30px auto;
+        }
+        
+        .hourglass-canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+        
+        .hourglass-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .sand-marker {
+            position: absolute;
+            width: 55px;
+            height: 55px;
+            background-color: rgba(255, 215, 0, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1a1a2e;
+            font-weight: bold;
+            font-size: 1.5rem;
+            z-index: 20;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: scale(0.8) translateY(-100px);
+            transition: opacity 0.5s, transform 0.5s;
+            border: 3px solid #ffd700;
+        }
+        
+        .sand-marker.visible {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+        
+        .sand1 { top: 40px; left: 120px; }
+        .sand2 { top: 60px; left: 120px; }
+        .sand3 { top: 80px; left: 120px; }
+        .sand4 { top: 100px; left: 120px; }
+        .sand5 { top: 120px; left: 120px; }
+        .sand6 { top: 140px; left: 120px; }
+        .sand7 { top: 160px; left: 120px; }
+        .sand8 { top: 180px; left: 120px; }
+        
+        .hourglass-empty {
+            width: 290px;
+            height: 290px;
+            margin: 30px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .hourglass-empty.visible {
+            opacity: 1;
+            z-index: 15;
+        }
+        
+        .empty-hourglass {
+            width: 230px;
+            height: 230px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .empty-hourglass-icon {
+            font-size: 5rem;
+            color: #6666aa;
+            position: relative;
+            z-index: 25;
+        }
+        
+        .time-up-text {
+            font-size: 2.5rem;
+            color: #ff4444;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .empty-text {
+            margin-top: 15px;
+            font-size: 1.4rem;
+            color: #ffd700;
+            text-align: center;
+            font-weight: bold;
+            z-index: 25;
+            position: relative;
+        }
+        
+        .stand {
+            position: absolute;
+            width: 330px;
+            height: 20px;
+            background-color: #8b4513;
+            bottom: -20px;
+            left: -20px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+        
+        .stand-legs {
+            position: absolute;
+            width: 350px;
+            height: 25px;
+            background-color: #a0522d;
+            bottom: -45px;
+            left: -30px;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .guesses-left {
+            text-align: center;
+            font-size: 1.4rem;
+            margin-top: 10px;
+        }
+        
+        .guesses-left span {
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .game-controls {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        
+        .game-info {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .word-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+        
+        .word-display {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            align-items: center;
+        }
+        
+        .word-line {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: nowrap;
+        }
+        
+        .word-char {
+            display: inline-block;
+            min-width: 35px;
+            height: 50px;
+            text-align: center;
+            line-height: 50px;
+            font-size: 2rem;
+            font-weight: bold;
+            border-bottom: 4px solid rgba(255, 255, 255, 0.4);
+            margin: 0 3px;
+            color: white !important;
+        }
+        
+        .word-char.correct {
+            color: #000000 !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        
+        .word-char.revealed {
+            color: #ff4444 !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        
+        .wrong-letters {
+            min-height: 30px;
+            font-size: 1.2rem;
+            color: #ffcccb;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .category {
+            text-align: center;
+            font-size: 1.3rem;
+            color: #ffd700;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .message {
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FFEB3B;
+            color: #333;
+            border: 3px solid #FFC107;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .message.win {
+            color: #2E7D32;
+            background-color: #C8E6C9;
+            border-color: #4CAF50;
+            animation: pulse-win 2s infinite;
+        }
+        
+        .message.lose {
+            color: #C62828;
+            background-color: #FFCDD2;
+            border-color: #F44336;
+            animation: pulse-lose 2s infinite;
+        }
+        
+        @keyframes pulse-win {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+        
+        @keyframes pulse-lose {
+            0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+        }
+        
+        .keyboard-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .key {
+            width: 45px;
+            height: 55px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.4rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .key:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        .key:disabled {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .key.correct {
+            background-color: #4CAF50;
+        }
+        
+        .key.wrong {
+            background-color: #f44336;
+        }
+        
+        .game-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .action-btn {
+            padding: 12px 25px;
+            background-color: #2d7dd2;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .action-btn:hover {
+            background-color: #1c6db0;
+            transform: translateY(-3px);
+        }
+        
+        .action-btn.reset {
+            background-color: #e74c3c;
+        }
+        
+        .action-btn.reset:hover {
+            background-color: #c0392b;
+        }
+        
+        .instructions {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-top: 15px;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        
+        /* Sand flow animation */
+        .sand-flow {
+            position: absolute;
+            width: 20px;
+            height: 0;
+            background-color: #ffd700;
+            top: 145px;
+            left: 135px;
+            z-index: 5;
+            opacity: 0.8;
+            border-radius: 10px;
+            transform-origin: top center;
+        }
+        
+        /* Sand pile animation */
+        .sand-pile {
+            position: absolute;
+            width: 80px;
+            height: 0;
+            background-color: #ffd700;
+            bottom: 50px;
+            left: 105px;
+            border-radius: 40px 40px 0 0;
+            z-index: 5;
+            opacity: 0.8;
+        }
+        
+        /* Compact layout adjustments */
+        .compact-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        @media (max-width: 1200px) {
+            .game-area {
+                gap: 20px;
+            }
+            
+            .hourglass-container {
+                flex: 0 0 300px;
+            }
+            
+            .hourglass-scene {
+                width: 260px;
+                height: 300px;
+            }
+            
+            .hourglass-base, .hourglass-empty {
+                width: 240px;
+                height: 240px;
+            }
+            
+            .stand {
+                width: 280px;
+            }
+            
+            .stand-legs {
+                width: 300px;
+            }
+            
+            .word-char {
+                min-width: 30px;
+                height: 45px;
+                line-height: 45px;
+                font-size: 1.8rem;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            body {
+                overflow-y: auto;
+            }
+            
+            .game-area {
+                flex-direction: column;
+            }
+            
+            .hourglass-container {
+                flex: 0 0 auto;
+                width: 100%;
+            }
+            
+            .hourglass-scene {
+                width: 240px;
+                height: 280px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .key {
+                width: 40px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-height: 900px) {
+            body {
+                padding: 5px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2.4rem;
+                margin-bottom: 5px;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+            }
+            
+            .hint-riddle {
+                padding: 12px;
+                font-size: 1.1rem;
+                margin-bottom: 15px;
+            }
+            
+            .game-area {
+                gap: 20px;
+            }
+            
+            .word-char {
+                min-width: 30px;
+                height: 45px;
+                line-height: 45px;
+                font-size: 1.8rem;
+            }
+            
+            .key {
+                width: 40px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+            
+            .action-btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            
+            .instructions {
+                padding: 12px;
+                font-size: 0.95rem;
+        }
+        }
+        
+        @media (max-height: 800px) {
+            .word-char {
+                min-width: 28px;
+                height: 40px;
+                line-height: 40px;
+                font-size: 1.6rem;
+            }
+            
+            .key {
+                width: 38px;
+                height: 45px;
+                font-size: 1.2rem;
+            }
+            
+            .game-area {
+                gap: 15px;
+            }
+            
+            .word-container {
+                padding: 15px;
+                gap: 15px;
+            }
+            
+            .word-display {
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-hourglass-half"></i> Nursing Competencies Game <i class="fas fa-hourglass-half"></i></h1>
+            <p class="subtitle">Guess the nursing education concept before the hourglass runs out!</p>
+        </header>
+        
+        <div class="hint-riddle" id="hint-riddle">
+            <i class="fas fa-question-circle"></i> Hint Riddle:<br>
+            "I tutor thousands, never sleep—through data streams my insights seep. I customize each student's road—what digital shift lightens the load?"
+        </div>
+        
+        <div class="game-area">
+            <div class="hourglass-container">
+                <h2>Hourglass</h2>
+                <div class="hourglass-scene">
+                    <div class="stand-legs"></div>
+                    <div class="stand"></div>
+                    <div class="hourglass-base">
+                        <div class="hourglass-canvas-container">
+                            <canvas id="sceneCanvas" class="hourglass-canvas"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Sand markers -->
+                    <div class="sand-marker sand1">1</div>
+                    <div class="sand-marker sand2">2</div>
+                    <div class="sand-marker sand3">3</div>
+                    <div class="sand-marker sand4">4</div>
+                    <div class="sand-marker sand5">5</div>
+                    <div class="sand-marker sand6">6</div>
+                    <div class="sand-marker sand7">7</div>
+                    <div class="sand-marker sand8">8</div>
+                    
+                    <!-- Empty hourglass -->
+                    <div class="hourglass-empty" id="hourglass-empty">
+                        <div class="empty-hourglass">
+                            <i class="fas fa-hourglass-end empty-hourglass-icon"></i>
+                            <div class="time-up-text">TIME'S UP!</div>
+                        </div>
+                        <div class="empty-text">Hourglass empty!</div>
+                    </div>
+                    
+                    <!-- Sand flow animation -->
+                    <div class="sand-flow" id="sand-flow"></div>
+                    <div class="sand-pile" id="sand-pile"></div>
+                </div>
+                <div class="guesses-left">Sand remaining: <span id="wrong-count">8</span> / 8</div>
+            </div>
+            
+            <div class="game-controls">
+                <div class="game-info">
+                    <div class="category" id="category">Category: Digital Nursing Education</div>
+                    
+                    <div class="word-container">
+                        <div class="word-display" id="word-display">
+                            <!-- Word will be generated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="compact-section">
+                        <div class="wrong-letters" id="wrong-letters">Wrong letters: None yet</div>
+                        <div class="message" id="message"></div>
+                    </div>
+                </div>
+                
+                <div class="keyboard-container">
+                    <div class="keyboard" id="keyboard">
+                        <!-- Keyboard will be generated by JavaScript -->
+                    </div>
+                    
+                    <div class="game-buttons">
+                        <button class="action-btn reset" id="reset-btn">
+                            <i class="fas fa-redo-alt"></i> New Game
+                        </button>
+                        <button class="action-btn" id="hint-btn">
+                            <i class="fas fa-lightbulb"></i> Reveal Letter
+                        </button>
+                    </div>
+                    
+                    <div class="instructions">
+                        <h3>How to Play:</h3>
+                        <p>Guess the hidden phrase by clicking letters on the keyboard. Each wrong guess makes sand flow from the top of the hourglass to the bottom. You can make up to 8 wrong guesses before the hourglass is empty and you lose the game. Guess all the letters correctly to win! Use the riddle above as a hint to figure out the answer.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        let currentWord = 'AUTOMATED, ADAPTIVE LEARNING';
+        let guessedLetters = [];
+        let wrongLetters = [];
+        let wrongGuesses = 0;
+        let maxWrongGuesses = 8;
+        let gameOver = false;
+        let canvas, ctx;
+        let sandLevel = 100; // Percentage of sand in top bulb
+        let lastSandUpdate = 0;
+        
+        // Split the phrase into three parts
+        const wordParts = ['AUTOMATED,', 'ADAPTIVE', 'LEARNING'];
+        
+        // Initialize the game
+        function initGame() {
+            // Reset game state
+            guessedLetters = [];
+            wrongLetters = [];
+            wrongGuesses = 0;
+            gameOver = false;
+            sandLevel = 100;
+            lastSandUpdate = Date.now();
+            
+            // Update UI
+            updateWordDisplay();
+            updateWrongLetters();
+            updateHourglassScene();
+            updateKeyboard();
+            
+            // Clear message
+            document.getElementById('message').textContent = '';
+            document.getElementById('message').className = 'message';
+            
+            // Update wrong guess count (inverted for hourglass)
+            document.getElementById('wrong-count').textContent = maxWrongGuesses - wrongGuesses;
+            
+            // Hide sand markers
+            document.querySelectorAll('.sand-marker').forEach(marker => {
+                marker.classList.remove('visible');
+            });
+            
+            // Hide empty hourglass
+            document.getElementById('hourglass-empty').classList.remove('visible');
+            
+            // Reset sand flow animation
+            document.getElementById('sand-flow').style.height = '0px';
+            document.getElementById('sand-pile').style.height = '0px';
+            
+            // Draw fresh scene
+            drawScene();
+        }
+        
+        // Draw the scene on canvas
+        function drawScene() {
+            if (!canvas || !ctx) return;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw hourglass stand
+            drawHourglassStand();
+            
+            // Draw hourglass
+            drawHourglass();
+            
+            // Draw sand in hourglass
+            drawSand();
+            
+            // Draw sand flow animation if active
+            drawSandFlow();
+        }
+        
+        // Draw hourglass stand
+        function drawHourglassStand() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Stand base
+            ctx.fillStyle = '#8b4513';
+            ctx.fillRect(0, height - 20, width, 20);
+            
+            // Stand legs
+            ctx.fillStyle = '#a0522d';
+            ctx.fillRect(-10, height - 45, width + 20, 25);
+            
+            // Stand decorative elements
+            ctx.fillStyle = '#d2691e';
+            // Left decorative knob
+            ctx.beginPath();
+            ctx.arc(60, height - 60, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Right decorative knob
+            ctx.beginPath();
+            ctx.arc(width - 60, height - 60, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Center decorative knob
+            ctx.beginPath();
+            ctx.arc(width / 2, height - 60, 20, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Stand ornamentation
+            ctx.strokeStyle = '#8b4513';
+            ctx.lineWidth = 3;
+            
+            // Left ornament
+            ctx.beginPath();
+            ctx.moveTo(60, height - 75);
+            ctx.lineTo(60, height - 100);
+            ctx.stroke();
+            
+            // Right ornament
+            ctx.beginPath();
+            ctx.moveTo(width - 60, height - 75);
+            ctx.lineTo(width - 60, height - 100);
+            ctx.stroke();
+            
+            // Center ornament
+            ctx.beginPath();
+            ctx.moveTo(width / 2, height - 80);
+            ctx.lineTo(width / 2, height - 120);
+            ctx.stroke();
+        }
+        
+        // Draw hourglass glass
+        function drawHourglass() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const hourglassTop = 50;
+            const hourglassBottom = height - 70;
+            const hourglassWidth = 100;
+            const neckWidth = 20;
+            const neckHeight = 30;
+            
+            // Glass material gradient
+            const glassGradient = ctx.createLinearGradient(
+                centerX - hourglassWidth, 0,
+                centerX + hourglassWidth, 0
+            );
+            glassGradient.addColorStop(0, 'rgba(200, 220, 240, 0.3)');
+            glassGradient.addColorStop(0.5, 'rgba(230, 240, 255, 0.6)');
+            glassGradient.addColorStop(1, 'rgba(200, 220, 240, 0.3)');
+            
+            ctx.fillStyle = glassGradient;
+            ctx.strokeStyle = 'rgba(180, 200, 220, 0.8)';
+            ctx.lineWidth = 3;
+            
+            // Draw top bulb
+            ctx.beginPath();
+            ctx.moveTo(centerX - hourglassWidth, hourglassTop);
+            ctx.bezierCurveTo(
+                centerX - hourglassWidth, hourglassTop - 20,
+                centerX + hourglassWidth, hourglassTop - 20,
+                centerX + hourglassWidth, hourglassTop
+            );
+            ctx.lineTo(centerX + hourglassWidth, hourglassTop + 80);
+            ctx.bezierCurveTo(
+                centerX + hourglassWidth, hourglassTop + 120,
+                centerX - hourglassWidth, hourglassTop + 120,
+                centerX - hourglassWidth, hourglassTop + 80
+            );
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Draw neck (top to center)
+            ctx.beginPath();
+            ctx.moveTo(centerX - neckWidth, hourglassTop + 80);
+            ctx.lineTo(centerX - neckWidth, hourglassTop + 80 + neckHeight);
+            ctx.lineTo(centerX + neckWidth, hourglassTop + 80 + neckHeight);
+            ctx.lineTo(centerX + neckWidth, hourglassTop + 80);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Draw neck (center to bottom)
+            const neckCenter = hourglassTop + 80 + neckHeight;
+            ctx.beginPath();
+            ctx.moveTo(centerX - neckWidth, neckCenter);
+            ctx.lineTo(centerX - neckWidth, neckCenter + neckHeight);
+            ctx.lineTo(centerX + neckWidth, neckCenter + neckHeight);
+            ctx.lineTo(centerX + neckWidth, neckCenter);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Draw bottom bulb (inverted)
+            const bottomBulbTop = neckCenter + neckHeight;
+            ctx.beginPath();
+            ctx.moveTo(centerX - hourglassWidth, bottomBulbTop);
+            ctx.bezierCurveTo(
+                centerX - hourglassWidth, bottomBulbTop + 20,
+                centerX + hourglassWidth, bottomBulbTop + 20,
+                centerX + hourglassWidth, bottomBulbTop
+            );
+            ctx.lineTo(centerX + hourglassWidth, hourglassBottom);
+            ctx.bezierCurveTo(
+                centerX + hourglassWidth, hourglassBottom + 40,
+                centerX - hourglassWidth, hourglassBottom + 40,
+                centerX - hourglassWidth, hourglassBottom
+            );
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Add glass highlights
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 2;
+            
+            // Left highlight
+            ctx.beginPath();
+            ctx.moveTo(centerX - hourglassWidth + 5, hourglassTop);
+            ctx.lineTo(centerX - hourglassWidth + 5, hourglassBottom + 40);
+            ctx.stroke();
+            
+            // Right highlight
+            ctx.beginPath();
+            ctx.moveTo(centerX + hourglassWidth - 5, hourglassTop);
+            ctx.lineTo(centerX + hourglassWidth - 5, hourglassBottom + 40);
+            ctx.stroke();
+            
+            // Neck highlight
+            ctx.beginPath();
+            ctx.moveTo(centerX - neckWidth + 3, hourglassTop + 80);
+            ctx.lineTo(centerX - neckWidth + 3, neckCenter + neckHeight);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX + neckWidth - 3, hourglassTop + 80);
+            ctx.lineTo(centerX + neckWidth - 3, neckCenter + neckHeight);
+            ctx.stroke();
+        }
+        
+        // Draw sand in hourglass
+        function drawSand() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const hourglassTop = 50;
+            const hourglassBottom = height - 70;
+            const hourglassWidth = 100;
+            const neckWidth = 20;
+            const neckHeight = 30;
+            
+            // Calculate sand levels
+            const sandPercentage = sandLevel / 100;
+            const topBulbHeight = 120;
+            const bottomBulbHeight = 120;
+            const neckCenter = hourglassTop + 80 + neckHeight;
+            
+            // Draw sand in top bulb (if any)
+            if (sandPercentage > 0) {
+                const topSandHeight = topBulbHeight * sandPercentage;
+                const topSandY = hourglassTop + 80 + (topBulbHeight - topSandHeight);
+                
+                // Sand gradient
+                const sandGradient = ctx.createLinearGradient(
+                    centerX - hourglassWidth, topSandY,
+                    centerX - hourglassWidth, hourglassTop + 80 + topBulbHeight
+                );
+                sandGradient.addColorStop(0, '#ffd700');
+                sandGradient.addColorStop(1, '#b8860b');
+                
+                ctx.fillStyle = sandGradient;
+                
+                // Draw sand shape in top bulb
+                ctx.beginPath();
+                ctx.moveTo(centerX - hourglassWidth, topSandY);
+                
+                // Curve for top of sand
+                if (topSandHeight > 40) {
+                    // Sand has a curved surface
+                    ctx.bezierCurveTo(
+                        centerX - hourglassWidth, topSandY - 10,
+                        centerX + hourglassWidth, topSandY - 10,
+                        centerX + hourglassWidth, topSandY
+                    );
+                } else {
+                    // Near empty, flat surface
+                    ctx.lineTo(centerX + hourglassWidth, topSandY);
+                }
+                
+                ctx.lineTo(centerX + hourglassWidth, hourglassTop + 80 + topBulbHeight);
+                ctx.bezierCurveTo(
+                    centerX + hourglassWidth, hourglassTop + 80 + topBulbHeight,
+                    centerX - hourglassWidth, hourglassTop + 80 + topBulbHeight,
+                    centerX - hourglassWidth, hourglassTop + 80 + topBulbHeight
+                );
+                ctx.closePath();
+                ctx.fill();
+                
+                // Add sand texture
+                ctx.fillStyle = 'rgba(184, 134, 11, 0.3)';
+                for (let i = 0; i < 20; i++) {
+                    const x = centerX - hourglassWidth + Math.random() * (hourglassWidth * 2);
+                    const y = topSandY + Math.random() * topSandHeight;
+                    const size = 1 + Math.random() * 3;
+                    
+                    if (x >= centerX - hourglassWidth && x <= centerX + hourglassWidth &&
+                        y >= topSandY && y <= hourglassTop + 80 + topBulbHeight) {
+                        ctx.beginPath();
+                        ctx.arc(x, y, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+            
+            // Draw sand in neck (if flowing)
+            const sandInNeck = Math.min(1 - sandPercentage, 0.5) * 2; // 0 to 1 based on sand flow
+            
+            if (sandInNeck > 0) {
+                const neckSandHeight = neckHeight * 2 * sandInNeck;
+                const neckSandTop = neckCenter - neckHeight + (neckHeight * 2 * (1 - sandInNeck));
+                
+                // Neck sand gradient
+                const neckSandGradient = ctx.createLinearGradient(
+                    centerX - neckWidth, neckSandTop,
+                    centerX - neckWidth, neckSandTop + neckSandHeight
+                );
+                neckSandGradient.addColorStop(0, '#ffd700');
+                neckSandGradient.addColorStop(1, '#b8860b');
+                
+                ctx.fillStyle = neckSandGradient;
+                
+                // Draw sand in neck
+                ctx.beginPath();
+                ctx.moveTo(centerX - neckWidth, neckSandTop);
+                ctx.lineTo(centerX + neckWidth, neckSandTop);
+                ctx.lineTo(centerX + neckWidth, neckSandTop + neckSandHeight);
+                ctx.lineTo(centerX - neckWidth, neckSandTop + neckSandHeight);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            // Draw sand in bottom bulb (accumulated)
+            const bottomSandPercentage = 1 - sandPercentage;
+            if (bottomSandPercentage > 0) {
+                const bottomSandHeight = bottomBulbHeight * bottomSandPercentage;
+                const bottomSandY = hourglassBottom + 40 - bottomSandHeight;
+                
+                // Bottom sand gradient (inverted)
+                const bottomSandGradient = ctx.createLinearGradient(
+                    centerX - hourglassWidth, bottomSandY,
+                    centerX - hourglassWidth, hourglassBottom + 40
+                );
+                bottomSandGradient.addColorStop(0, '#b8860b');
+                bottomSandGradient.addColorStop(1, '#ffd700');
+                
+                ctx.fillStyle = bottomSandGradient;
+                
+                // Draw sand shape in bottom bulb
+                ctx.beginPath();
+                ctx.moveTo(centerX - hourglassWidth, hourglassBottom + 40);
+                ctx.bezierCurveTo(
+                    centerX - hourglassWidth, hourglassBottom + 40,
+                    centerX + hourglassWidth, hourglassBottom + 40,
+                    centerX + hourglassWidth, hourglassBottom + 40
+                );
+                ctx.lineTo(centerX + hourglassWidth, bottomSandY);
+                
+                // Curve for top of bottom sand
+                if (bottomSandHeight > 40) {
+                    ctx.bezierCurveTo(
+                        centerX + hourglassWidth, bottomSandY - 10,
+                        centerX - hourglassWidth, bottomSandY - 10,
+                        centerX - hourglassWidth, bottomSandY
+                    );
+                } else {
+                    ctx.lineTo(centerX - hourglassWidth, bottomSandY);
+                }
+                
+                ctx.closePath();
+                ctx.fill();
+                
+                // Add sand texture to bottom
+                ctx.fillStyle = 'rgba(184, 134, 11, 0.3)';
+                for (let i = 0; i < 20; i++) {
+                    const x = centerX - hourglassWidth + Math.random() * (hourglassWidth * 2);
+                    const y = bottomSandY + Math.random() * bottomSandHeight;
+                    const size = 1 + Math.random() * 3;
+                    
+                    if (x >= centerX - hourglassWidth && x <= centerX + hourglassWidth &&
+                        y >= bottomSandY && y <= hourglassBottom + 40) {
+                        ctx.beginPath();
+                        ctx.arc(x, y, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+        }
+        
+        // Draw sand flow animation
+        function drawSandFlow() {
+            // This is handled by CSS animations, but we update sand level here
+            const now = Date.now();
+            const timeSinceLastUpdate = now - lastSandUpdate;
+            
+            // If sand is flowing, update level
+            if (wrongGuesses > 0 && sandLevel > (100 - (wrongGuesses * 12.5))) {
+                const targetLevel = 100 - (wrongGuesses * 12.5);
+                const flowRate = 0.5; // % per second
+                
+                if (sandLevel > targetLevel) {
+                    sandLevel -= (flowRate * timeSinceLastUpdate) / 1000;
+                    if (sandLevel < targetLevel) sandLevel = targetLevel;
+                }
+                
+                // Update sand flow animation
+                const flowHeight = (1 - (sandLevel / 100)) * 60;
+                document.getElementById('sand-flow').style.height = flowHeight + 'px';
+                
+                // Update sand pile
+                const pileHeight = (1 - (sandLevel / 100)) * 40;
+                document.getElementById('sand-pile').style.height = pileHeight + 'px';
+            }
+            
+            lastSandUpdate = now;
+        }
+        
+        // Trigger sand flow animation
+        function triggerSandFlow() {
+            if (wrongGuesses === 0) return;
+            
+            // Calculate how much sand should flow
+            const sandToDrain = wrongGuesses * 12.5; // Each wrong guess drains 12.5%
+            
+            // Animate sand flow
+            const sandFlow = document.getElementById('sand-flow');
+            const sandPile = document.getElementById('sand-pile');
+            
+            // Reset and animate
+            sandFlow.style.height = '0px';
+            sandPile.style.height = '0px';
+            
+            // Animate sand flowing
+            const flowHeight = (sandToDrain / 100) * 60;
+            const pileHeight = (sandToDrain / 100) * 40;
+            
+            sandFlow.animate([
+                { height: '0px', opacity: 0.8 },
+                { height: flowHeight + 'px', opacity: 0.8 },
+                { height: '0px', opacity: 0 }
+            ], {
+                duration: 1000,
+                easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+            });
+            
+            // Animate sand piling up
+            sandPile.animate([
+                { height: '0px', opacity: 0.8 },
+                { height: pileHeight + 'px', opacity: 0.8 }
+            ], {
+                duration: 1000,
+                easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+                fill: 'forwards'
+            });
+            
+            // Show sand marker
+            const sandMarker = document.querySelector(`.sand${wrongGuesses}`);
+            if (sandMarker) {
+                sandMarker.classList.add('visible');
+            }
+        }
+        
+        // Update the displayed word with each word on its own line
+        function updateWordDisplay() {
+            const wordDisplay = document.getElementById('word-display');
+            wordDisplay.innerHTML = '';
+            
+            // Create a line for each word
+            wordParts.forEach(word => {
+                const wordLine = document.createElement('div');
+                wordLine.className = 'word-line';
+                
+                for (let i = 0; i < word.length; i++) {
+                    const char = word[i];
+                    
+                    // Add letter
+                    const charElement = document.createElement('div');
+                    charElement.className = 'word-char';
+                    
+                    if (guessedLetters.includes(char) || char === ',' || char === '-') {
+                        charElement.textContent = char;
+                        // If game is won, make letters black
+                        if (gameOver && checkWinCondition()) {
+                            charElement.classList.add('correct');
+                        } else {
+                            charElement.style.color = '#ffffff';
+                        }
+                    } else {
+                        charElement.textContent = '_';
+                        charElement.style.color = '#ffffff';
+                    }
+                    
+                    wordLine.appendChild(charElement);
+                }
+                
+                wordDisplay.appendChild(wordLine);
+            });
+            
+            // Check if the player has won
+            if (checkWinCondition() && !gameOver) {
+                gameOver = true;
+                document.getElementById('message').textContent = 'Excellent! You identified the digital nursing education concept!';
+                document.getElementById('message').className = 'message win';
+                disableAllKeys();
+                
+                // Make all letters black when won
+                const wordChars = document.querySelectorAll('.word-char');
+                wordChars.forEach(char => {
+                    if (char.textContent !== '_') {
+                        char.classList.add('correct');
+                    }
+                });
+            }
+        }
+        
+        // Check win condition
+        function checkWinCondition() {
+            const cleanWord = currentWord.replace(/[,-]/g, '');
+            for (let char of cleanWord) {
+                if (char !== ' ' && !guessedLetters.includes(char)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        // Update the wrong letters display
+        function updateWrongLetters() {
+            const wrongLettersElement = document.getElementById('wrong-letters');
+            if (wrongLetters.length === 0) {
+                wrongLettersElement.textContent = 'Wrong letters: None yet';
+            } else {
+                wrongLettersElement.textContent = `Wrong letters: ${wrongLetters.join(', ')}`;
+            }
+        }
+        
+        // Update the hourglass scene based on wrong guesses
+        function updateHourglassScene() {
+            // Update sand level based on wrong guesses
+            const targetSandLevel = 100 - (wrongGuesses * 12.5);
+            
+            // Animate sand flow
+            triggerSandFlow();
+            
+            // Redraw scene
+            drawScene();
+            
+            // Update sand remaining display (inverted)
+            document.getElementById('wrong-count').textContent = maxWrongGuesses - wrongGuesses;
+            
+            // Show empty hourglass when sand is gone
+            if (wrongGuesses >= maxWrongGuesses) {
+                setTimeout(() => {
+                    document.getElementById('hourglass-empty').classList.add('visible');
+                }, 1000);
+            }
+        }
+        
+        // Create the keyboard
+        function createKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            keyboard.innerHTML = '';
+            
+            // Create keys for A-Z
+            for (let i = 65; i <= 90; i++) {
+                const letter = String.fromCharCode(i);
+                const key = document.createElement('button');
+                key.className = 'key';
+                key.textContent = letter;
+                key.dataset.letter = letter;
+                key.addEventListener('click', () => handleGuess(letter));
+                keyboard.appendChild(key);
+            }
+        }
+        
+        // Update the keyboard based on guessed letters
+        function updateKeyboard() {
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => {
+                const letter = key.dataset.letter;
+                
+                if (guessedLetters.includes(letter) || wrongLetters.includes(letter)) {
+                    key.disabled = true;
+                    
+                    if (currentWord.includes(letter)) {
+                        key.classList.add('correct');
+                    } else {
+                        key.classList.add('wrong');
+                    }
+                } else {
+                    key.disabled = false;
+                    key.classList.remove('correct', 'wrong');
+                }
+            });
+        }
+        
+        // Handle a letter guess
+        function handleGuess(letter) {
+            if (gameOver) return;
+            
+            // Check if the letter was already guessed
+            if (guessedLetters.includes(letter) || wrongLetters.includes(letter)) {
+                return;
+            }
+            
+            // Check if the letter is in the word
+            if (currentWord.includes(letter)) {
+                // Correct guess
+                guessedLetters.push(letter);
+            } else {
+                // Wrong guess
+                wrongLetters.push(letter);
+                wrongGuesses++;
+                
+                // Update wrong guess count (inverted for hourglass)
+                document.getElementById('wrong-count').textContent = maxWrongGuesses - wrongGuesses;
+                
+                // Check if the player has lost
+                if (wrongGuesses >= maxWrongGuesses) {
+                    gameOver = true;
+                    document.getElementById('message').textContent = `Game Over! The answer is: AUTOMATED, ADAPTIVE LEARNING`;
+                    document.getElementById('message').className = 'message lose';
+                    disableAllKeys();
+                    
+                    // Reveal all letters when lost and make them red
+                    const wordChars = document.querySelectorAll('.word-char');
+                    let charIndex = 0;
+                    wordParts.forEach(word => {
+                        for (let i = 0; i < word.length; i++) {
+                            wordChars[charIndex].textContent = word[i];
+                            wordChars[charIndex].classList.add('revealed');
+                            charIndex++;
+                        }
+                    });
+                }
+            }
+            
+            // Update the UI
+            updateWordDisplay();
+            updateWrongLetters();
+            updateHourglassScene();
+            updateKeyboard();
+        }
+        
+        // Disable all keyboard keys
+        function disableAllKeys() {
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => {
+                key.disabled = true;
+            });
+        }
+        
+        // Provide a hint (reveal a random letter)
+        function provideHint() {
+            if (gameOver) return;
+            
+            // Find letters that haven't been guessed yet (excluding spaces, commas, and hyphens)
+            const unguessedLetters = [];
+            for (let letter of currentWord) {
+                if (letter !== ' ' && letter !== ',' && letter !== '-' && !guessedLetters.includes(letter) && !unguessedLetters.includes(letter)) {
+                    unguessedLetters.push(letter);
+                }
+            }
+            
+            // If all letters are guessed, no hint needed
+            if (unguessedLetters.length === 0) return;
+            
+            // Select a random unguessed letter
+            const hintLetter = unguessedLetters[Math.floor(Math.random() * unguessedLetters.length)];
+            
+            // Add it to guessed letters
+            guessedLetters.push(hintLetter);
+            
+            // Update the UI
+            updateWordDisplay();
+            updateKeyboard();
+            
+            // Show a message
+            document.getElementById('message').textContent = `Hint revealed: "${hintLetter}"`;
+            document.getElementById('message').className = 'message';
+            
+            // Remove the message after 2 seconds
+            setTimeout(() => {
+                if (!gameOver) {
+                    document.getElementById('message').textContent = '';
+                    document.getElementById('message').className = 'message';
+                }
+            }, 2000);
+        }
+        
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize canvas
+            canvas = document.getElementById('sceneCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = 290;
+            canvas.height = 290;
+            
+            // Create the keyboard
+            createKeyboard();
+            
+            // Initialize the game
+            initGame();
+            
+            // Add event listeners to buttons
+            document.getElementById('reset-btn').addEventListener('click', initGame);
+            document.getElementById('hint-btn').addEventListener('click', provideHint);
+            
+            // Add keyboard event listener for letter keys
+            document.addEventListener('keydown', (e) => {
+                // Only process letter keys
+                if (e.keyCode >= 65 && e.keyCode <= 90) {
+                    const letter = e.key.toUpperCase();
+                    handleGuess(letter);
+                }
+                
+                // Spacebar for new game
+                if (e.keyCode === 32 && gameOver) {
+                    initGame();
+                }
+                
+                // H key for hint
+                if (e.keyCode === 72 && !gameOver) {
+                    provideHint();
+                }
+            });
+            
+            // Animation loop for sand flow
+            function animate() {
+                if (!gameOver) {
+                    drawScene();
+                }
+                requestAnimationFrame(animate);
+            }
+            
+            // Start animation
+            animate();
+        });
+    </script>
+</body>
+</html>

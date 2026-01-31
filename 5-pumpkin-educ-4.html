@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nursing Word Guessing Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #5d4037, #8d6e63);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #ffccbc;
+            margin-bottom: 15px;
+        }
+        
+        .hint-riddle {
+            text-align: center;
+            font-style: italic;
+            color: #ffcc80;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            font-size: 1.2rem;
+            border: 2px dashed rgba(255, 204, 128, 0.3);
+            flex-shrink: 0;
+        }
+        
+        .game-area {
+            display: flex;
+            gap: 30px;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .jenga-container {
+            flex: 0 0 350px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        
+        .jenga-scene {
+            width: 310px;
+            height: 350px;
+            position: relative;
+            margin: 15px auto;
+        }
+        
+        .jenga-base {
+            position: relative;
+            width: 290px;
+            height: 290px;
+            margin: 30px auto;
+        }
+        
+        .jenga-canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+        
+        .jenga-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .block-marker {
+            position: absolute;
+            width: 55px;
+            height: 55px;
+            background-color: rgba(255, 204, 128, 0.9);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5d4037;
+            font-weight: bold;
+            font-size: 1.5rem;
+            z-index: 20;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: scale(0.8) translateX(-100px);
+            transition: opacity 0.5s, transform 0.5s;
+            border: 3px solid #ffb74d;
+        }
+        
+        .block-marker.visible {
+            opacity: 1;
+            transform: scale(1) translateX(0);
+        }
+        
+        .block1 { top: 25px; left: 230px; }
+        .block2 { top: 70px; left: 230px; }
+        .block3 { top: 115px; left: 230px; }
+        .block4 { top: 160px; left: 230px; }
+        .block5 { top: 205px; left: 230px; }
+        .block6 { top: 250px; left: 230px; }
+        .block7 { top: 25px; right: 230px; }
+        .block8 { top: 70px; right: 230px; }
+        
+        .jenga-collapsed {
+            width: 290px;
+            height: 290px;
+            margin: 30px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .jenga-collapsed.visible {
+            opacity: 1;
+            z-index: 15;
+        }
+        
+        .collapsed-tower {
+            width: 230px;
+            height: 230px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .fallen-blocks {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .fallen-block {
+            position: absolute;
+            background-color: #a1887f;
+            border-radius: 5px;
+            border: 3px solid #8d6e63;
+            transform-origin: center;
+            background: linear-gradient(to bottom, #a1887f, #8d6e63);
+        }
+        
+        .fallen1 {
+            width: 75px;
+            height: 38px;
+            top: 40px;
+            left: 20px;
+            transform: rotate(45deg);
+        }
+        
+        .fallen2 {
+            width: 75px;
+            height: 38px;
+            top: 90px;
+            left: 100px;
+            transform: rotate(-30deg);
+        }
+        
+        .fallen3 {
+            width: 75px;
+            height: 38px;
+            top: 20px;
+            left: 100px;
+            transform: rotate(15deg);
+        }
+        
+        .fallen4 {
+            width: 75px;
+            height: 38px;
+            top: 140px;
+            left: 40px;
+            transform: rotate(-15deg);
+        }
+        
+        .fallen5 {
+            width: 75px;
+            height: 38px;
+            top: 180px;
+            left: 120px;
+            transform: rotate(60deg);
+        }
+        
+        .fallen6 {
+            width: 75px;
+            height: 38px;
+            top: 100px;
+            left: 30px;
+            transform: rotate(-60deg);
+        }
+        
+        .fallen7 {
+            width: 75px;
+            height: 38px;
+            top: 150px;
+            left: 150px;
+            transform: rotate(75deg);
+        }
+        
+        .fallen8 {
+            width: 75px;
+            height: 38px;
+            top: 200px;
+            left: 60px;
+            transform: rotate(-45deg);
+        }
+        
+        .collapse-icon {
+            font-size: 4rem;
+            color: #ff5722;
+            position: relative;
+            z-index: 25;
+            animation: shake 0.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes shake {
+            0% { transform: translateX(-3px) rotate(-3deg); }
+            100% { transform: translateX(3px) rotate(3deg); }
+        }
+        
+        .collapse-text {
+            margin-top: 15px;
+            font-size: 1.4rem;
+            color: #ffcc80;
+            text-align: center;
+            font-weight: bold;
+            z-index: 25;
+            position: relative;
+        }
+        
+        .table-surface {
+            position: absolute;
+            width: 330px;
+            height: 25px;
+            background-color: #6d4c41;
+            bottom: -15px;
+            left: -20px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+        
+        .table-edge {
+            position: absolute;
+            width: 350px;
+            height: 18px;
+            background-color: #5d4037;
+            bottom: -33px;
+            left: -30px;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .guesses-left {
+            text-align: center;
+            font-size: 1.4rem;
+            margin-top: 10px;
+        }
+        
+        .guesses-left span {
+            font-weight: bold;
+            color: #ffb74d;
+        }
+        
+        .game-controls {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        
+        .game-info {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .word-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+        
+        .word-display {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            align-items: center;
+        }
+        
+        .word-line {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: nowrap;
+        }
+        
+        .word-char {
+            display: inline-block;
+            min-width: 35px;
+            height: 50px;
+            text-align: center;
+            line-height: 50px;
+            font-size: 2rem;
+            font-weight: bold;
+            border-bottom: 4px solid rgba(255, 255, 255, 0.4);
+            margin: 0 3px;
+            color: white !important;
+        }
+        
+        .word-char.correct {
+            color: #000000 !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        
+        .word-char.revealed {
+            color: #ff4444 !important;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        
+        .wrong-letters {
+            min-height: 30px;
+            font-size: 1.2rem;
+            color: #ffcccb;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .category {
+            text-align: center;
+            font-size: 1.3rem;
+            color: #ffcc80;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .message {
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FFEB3B;
+            color: #333;
+            border: 3px solid #FFC107;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .message.win {
+            color: #2E7D32;
+            background-color: #C8E6C9;
+            border-color: #4CAF50;
+            animation: pulse-win 2s infinite;
+        }
+        
+        .message.lose {
+            color: #C62828;
+            background-color: #FFCDD2;
+            border-color: #F44336;
+            animation: pulse-lose 2s infinite;
+        }
+        
+        @keyframes pulse-win {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+        
+        @keyframes pulse-lose {
+            0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+        }
+        
+        .keyboard-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .key {
+            width: 45px;
+            height: 55px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.4rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .key:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        .key:disabled {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .key.correct {
+            background-color: #4CAF50;
+        }
+        
+        .key.wrong {
+            background-color: #f44336;
+        }
+        
+        .game-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .action-btn {
+            padding: 12px 25px;
+            background-color: #2d7dd2;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .action-btn:hover {
+            background-color: #1c6db0;
+            transform: translateY(-3px);
+        }
+        
+        .action-btn.reset {
+            background-color: #FF8C42;
+        }
+        
+        .action-btn.reset:hover {
+            background-color: #e67e3a;
+        }
+        
+        .instructions {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-top: 15px;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #ffb74d;
+        }
+        
+        /* Compact layout adjustments */
+        .compact-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        @media (max-width: 1200px) {
+            .game-area {
+                gap: 20px;
+            }
+            
+            .jenga-container {
+                flex: 0 0 300px;
+            }
+            
+            .jenga-scene {
+                width: 260px;
+                height: 300px;
+            }
+            
+            .jenga-base, .jenga-collapsed {
+                width: 240px;
+                height: 240px;
+            }
+            
+            .table-surface {
+                width: 280px;
+            }
+            
+            .table-edge {
+                width: 300px;
+            }
+            
+            .word-char {
+                min-width: 30px;
+                height: 45px;
+                line-height: 45px;
+                font-size: 1.8rem;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            body {
+                overflow-y: auto;
+            }
+            
+            .game-area {
+                flex-direction: column;
+            }
+            
+            .jenga-container {
+                flex: 0 0 auto;
+                width: 100%;
+            }
+            
+            .jenga-scene {
+                width: 240px;
+                height: 280px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .key {
+                width: 40px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-height: 900px) {
+            body {
+                padding: 5px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2.4rem;
+                margin-bottom: 5px;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+            }
+            
+            .hint-riddle {
+                padding: 12px;
+                font-size: 1.1rem;
+                margin-bottom: 15px;
+            }
+            
+            .game-area {
+                gap: 20px;
+            }
+            
+            .word-char {
+                min-width: 30px;
+                height: 45px;
+                line-height: 45px;
+                font-size: 1.8rem;
+            }
+            
+            .key {
+                width: 40px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+            
+            .action-btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            
+            .instructions {
+                padding: 12px;
+                font-size: 0.95rem;
+            }
+        }
+        
+        @media (max-height: 800px) {
+            .word-char {
+                min-width: 28px;
+                height: 40px;
+                line-height: 40px;
+                font-size: 1.6rem;
+            }
+            
+            .key {
+                width: 38px;
+                height: 45px;
+                font-size: 1.2rem;
+            }
+            
+            .game-area {
+                gap: 15px;
+            }
+            
+            .word-container {
+                padding: 15px;
+                gap: 15px;
+            }
+            
+            .word-display {
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-cubes"></i> Nursing Competencies Game <i class="fas fa-cubes"></i></h1>
+            <p class="subtitle">Guess the nursing technology concept before the Jenga tower collapses!</p>
+        </header>
+        
+        <div class="hint-riddle" id="hint-riddle">
+            <i class="fas fa-question-circle"></i> Hint Riddle:<br>
+            "With VR headsets and apps that teach, I bring the future within reach. Beyond chalkboards, I upgrade the chart—what tech-fueled leap in nursing art?"
+        </div>
+        
+        <div class="game-area">
+            <div class="jenga-container">
+                <h2>Jenga Tower</h2>
+                <div class="jenga-scene">
+                    <div class="table-edge"></div>
+                    <div class="table-surface"></div>
+                    <div class="jenga-base">
+                        <div class="jenga-canvas-container">
+                            <canvas id="jengaCanvas" class="jenga-canvas"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Removed block markers -->
+                    <div class="block-marker block1">1</div>
+                    <div class="block-marker block2">2</div>
+                    <div class="block-marker block3">3</div>
+                    <div class="block-marker block4">4</div>
+                    <div class="block-marker block5">5</div>
+                    <div class="block-marker block6">6</div>
+                    <div class="block-marker block7">7</div>
+                    <div class="block-marker block8">8</div>
+                    
+                    <!-- Collapsed tower -->
+                    <div class="jenga-collapsed" id="jenga-collapsed">
+                        <div class="collapsed-tower">
+                            <div class="fallen-blocks">
+                                <div class="fallen-block fallen1"></div>
+                                <div class="fallen-block fallen2"></div>
+                                <div class="fallen-block fallen3"></div>
+                                <div class="fallen-block fallen4"></div>
+                                <div class="fallen-block fallen5"></div>
+                                <div class="fallen-block fallen6"></div>
+                                <div class="fallen-block fallen7"></div>
+                                <div class="fallen-block fallen8"></div>
+                            </div>
+                            <i class="fas fa-exclamation-triangle collapse-icon"></i>
+                        </div>
+                        <div class="collapse-text">Tower Collapsed!</div>
+                    </div>
+                </div>
+                <div class="guesses-left">Blocks removed: <span id="wrong-count">0</span> / 8</div>
+            </div>
+            
+            <div class="game-controls">
+                <div class="game-info">
+                    <div class="category" id="category">Category: Nursing Education Technology</div>
+                    
+                    <div class="word-container">
+                        <div class="word-display" id="word-display">
+                            <!-- Word will be generated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="compact-section">
+                        <div class="wrong-letters" id="wrong-letters">Wrong letters: None yet</div>
+                        <div class="message" id="message"></div>
+                    </div>
+                </div>
+                
+                <div class="keyboard-container">
+                    <div class="keyboard" id="keyboard">
+                        <!-- Keyboard will be generated by JavaScript -->
+                    </div>
+                    
+                    <div class="game-buttons">
+                        <button class="action-btn reset" id="reset-btn">
+                            <i class="fas fa-redo-alt"></i> New Game
+                        </button>
+                        <button class="action-btn" id="hint-btn">
+                            <i class="fas fa-lightbulb"></i> Reveal Letter
+                        </button>
+                    </div>
+                    
+                    <div class="instructions">
+                        <h3>How to Play:</h3>
+                        <p>Guess the hidden phrase by clicking letters on the keyboard. Each wrong guess removes a block from the Jenga tower. You can make up to 8 wrong guesses before the tower collapses and you lose the game. Guess all the letters correctly to win! Use the riddle above as a hint to figure out the answer.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        let currentWord = 'TECH-ENHANCED NURSE TRAINING';
+        let guessedLetters = [];
+        let wrongLetters = [];
+        let wrongGuesses = 0;
+        let maxWrongGuesses = 8;
+        let gameOver = false;
+        let canvas, ctx;
+        
+        // Split the phrase into three parts
+        const wordParts = ['TECH-ENHANCED', 'NURSE', 'TRAINING'];
+        
+        // Block removal positions (which blocks to remove from the tower)
+        const blockRemovalPositions = [
+            {row: 2, col: 0, layer: 0},  // Middle of third row from top
+            {row: 1, col: 2, layer: 1},  // Right side of second row
+            {row: 3, col: 1, layer: 0},  // Center of fourth row
+            {row: 0, col: 0, layer: 1},  // Left side of top row
+            {row: 2, col: 2, layer: 1},  // Right side of third row
+            {row: 1, col: 1, layer: 0},  // Center of second row
+            {row: 3, col: 0, layer: 1},  // Left side of fourth row
+            {row: 0, col: 2, layer: 0}   // Right side of top row
+        ];
+        
+        // Initialize the game
+        function initGame() {
+            // Reset game state
+            guessedLetters = [];
+            wrongLetters = [];
+            wrongGuesses = 0;
+            gameOver = false;
+            
+            // Update UI
+            updateWordDisplay();
+            updateWrongLetters();
+            updateJenga();
+            updateKeyboard();
+            
+            // Clear message
+            document.getElementById('message').textContent = '';
+            document.getElementById('message').className = 'message';
+            
+            // Update wrong guess count
+            document.getElementById('wrong-count').textContent = wrongGuesses;
+            
+            // Hide block markers
+            document.querySelectorAll('.block-marker').forEach(marker => {
+                marker.classList.remove('visible');
+            });
+            
+            // Hide collapsed tower
+            document.getElementById('jenga-collapsed').classList.remove('visible');
+            
+            // Draw fresh Jenga tower
+            drawJengaTower();
+        }
+        
+        // Draw the Jenga tower on canvas
+        function drawJengaTower() {
+            if (!canvas || !ctx) return;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw table surface
+            ctx.fillStyle = '#6d4c41';
+            ctx.fillRect(0, height - 25, width, 25);
+            
+            // Draw table edge
+            ctx.fillStyle = '#5d4037';
+            ctx.fillRect(-10, height - 43, width + 20, 18);
+            
+            // Tower parameters - 25% larger blocks
+            const towerWidth = 140;
+            const towerHeight = 200;
+            const blockHeight = 25;  // 25% larger
+            const blockWidth = 75;   // 25% larger
+            const blockDepth = 38;   // 25% larger
+            
+            // Center tower on table
+            const towerX = (width - towerWidth) / 2;
+            const towerY = height - 45 - towerHeight;
+            
+            // Draw Jenga tower with missing blocks
+            drawJengaLayers(towerX, towerY, towerWidth, blockHeight, blockWidth, blockDepth);
+            
+            // Draw tower lean effect based on removed blocks
+            drawTowerLean();
+        }
+        
+        // Draw Jenga layers with missing blocks
+        function drawJengaLayers(towerX, towerY, towerWidth, blockHeight, blockWidth, blockDepth) {
+            const layers = 8; // Total layers in tower (reduced to fit larger blocks)
+            const blocksPerLayer = 3;
+            
+            // Calculate lean offset based on wrong guesses
+            const leanOffset = Math.min(wrongGuesses * 4, 20);
+            const leanDirection = wrongGuesses % 2 === 0 ? 1 : -1;
+            
+            for (let layer = 0; layer < layers; layer++) {
+                const yPos = towerY + (layer * blockHeight);
+                const isHorizontal = layer % 2 === 0; // Alternating orientation
+                
+                for (let block = 0; block < blocksPerLayer; block++) {
+                    // Check if this block should be removed
+                    const shouldRemove = isBlockRemoved(layer, block, isHorizontal);
+                    
+                    if (!shouldRemove) {
+                        // Block position with slight random offset for realism
+                        const xOffset = leanOffset * leanDirection * (layer / layers);
+                        const wobble = wrongGuesses > 3 ? Math.sin(layer * 0.5) * 2 : 0;
+                        
+                        if (isHorizontal) {
+                            // Horizontal blocks (long side facing forward)
+                            const xPos = towerX + (block * blockWidth) + xOffset + wobble;
+                            
+                            // Draw 3D block
+                            drawBlock3D(xPos, yPos, blockWidth, blockHeight, blockDepth, true);
+                        } else {
+                            // Vertical blocks (short side facing forward)
+                            const xPos = towerX + (block * blockDepth) + xOffset + wobble;
+                            
+                            // Draw 3D block
+                            drawBlock3D(xPos, yPos, blockDepth, blockHeight, blockWidth, false);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Check if a block should be removed based on wrong guesses
+        function isBlockRemoved(layer, block, isHorizontal) {
+            for (let i = 0; i < wrongGuesses; i++) {
+                const removal = blockRemovalPositions[i];
+                if (!removal) continue;
+                
+                // Convert removal position to layer/block coordinates
+                if (removal.layer === (isHorizontal ? 0 : 1)) {
+                    if (layer === removal.row && block === removal.col) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        // Draw a 3D Jenga block - 25% larger
+        function drawBlock3D(x, y, width, height, depth, isHorizontal) {
+            // Block color (wood)
+            const woodColor = isHorizontal ? '#a1887f' : '#8d6e63';
+            const darkWood = isHorizontal ? '#8d6e63' : '#6d4c41';
+            const lightWood = isHorizontal ? '#bcaaa4' : '#a1887f';
+            
+            // Draw front face
+            ctx.fillStyle = woodColor;
+            ctx.fillRect(x, y, width, height);
+            
+            // Draw wood grain texture
+            ctx.strokeStyle = darkWood;
+            ctx.lineWidth = 1.5;
+            
+            // Horizontal grain lines
+            for (let i = 0; i < 3; i++) {
+                const grainY = y + (i * height / 3) + 3;
+                ctx.beginPath();
+                ctx.moveTo(x + 3, grainY);
+                ctx.lineTo(x + width - 3, grainY);
+                ctx.stroke();
+            }
+            
+            // Draw side face (for 3D effect)
+            if (isHorizontal) {
+                // Right side
+                ctx.fillStyle = darkWood;
+                ctx.beginPath();
+                ctx.moveTo(x + width, y);
+                ctx.lineTo(x + width + 6, y - 4);
+                ctx.lineTo(x + width + 6, y + height - 4);
+                ctx.lineTo(x + width, y + height);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Top side
+                ctx.fillStyle = lightWood;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + width, y);
+                ctx.lineTo(x + width + 6, y - 4);
+                ctx.lineTo(x + 6, y - 4);
+                ctx.closePath();
+                ctx.fill();
+            } else {
+                // Right side (deeper)
+                ctx.fillStyle = darkWood;
+                ctx.beginPath();
+                ctx.moveTo(x + width, y);
+                ctx.lineTo(x + width + 10, y - 5);
+                ctx.lineTo(x + width + 10, y + height - 5);
+                ctx.lineTo(x + width, y + height);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Top side (wider)
+                ctx.fillStyle = lightWood;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + width, y);
+                ctx.lineTo(x + width + 10, y - 5);
+                ctx.lineTo(x + 10, y - 5);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            // Add block shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(x, y + height, width, 3);
+        }
+        
+        // Draw tower lean effect
+        function drawTowerLean() {
+            if (wrongGuesses < 2) return;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Draw cracks between blocks when tower is unstable
+            if (wrongGuesses >= 2) {
+                ctx.strokeStyle = '#ff8a65';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 3]);
+                
+                // Small cracks appear
+                ctx.beginPath();
+                ctx.moveTo(width * 0.35, height * 0.5);
+                ctx.lineTo(width * 0.35 - 3, height * 0.55);
+                ctx.stroke();
+                
+                ctx.setLineDash([]);
+            }
+            
+            if (wrongGuesses >= 4) {
+                ctx.strokeStyle = '#ff5722';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 4]);
+                
+                // Larger cracks
+                ctx.beginPath();
+                ctx.moveTo(width * 0.65, height * 0.4);
+                ctx.lineTo(width * 0.65 + 5, height * 0.45);
+                ctx.lineTo(width * 0.65 - 3, height * 0.5);
+                ctx.stroke();
+                
+                ctx.setLineDash([]);
+            }
+            
+            if (wrongGuesses >= 6) {
+                ctx.strokeStyle = '#d32f2f';
+                ctx.lineWidth = 4;
+                ctx.setLineDash([3, 2]);
+                
+                // Major cracks
+                ctx.beginPath();
+                ctx.moveTo(width * 0.5, height * 0.3);
+                ctx.lineTo(width * 0.5 - 8, height * 0.4);
+                ctx.lineTo(width * 0.5 + 8, height * 0.45);
+                ctx.stroke();
+                
+                ctx.setLineDash([]);
+            }
+            
+            // Draw "danger" warning when tower is very unstable
+            if (wrongGuesses >= 7) {
+                ctx.fillStyle = 'rgba(255, 87, 34, 0.4)';
+                ctx.beginPath();
+                ctx.arc(width / 2, height * 0.3, 35, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#ff5722';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(width / 2, height * 0.3, 35, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Draw warning symbol
+                ctx.fillStyle = '#ff5722';
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('!', width / 2, height * 0.3);
+            }
+        }
+        
+        // Update the displayed word with each word on its own line
+        function updateWordDisplay() {
+            const wordDisplay = document.getElementById('word-display');
+            wordDisplay.innerHTML = '';
+            
+            // Create a line for each word
+            wordParts.forEach(word => {
+                const wordLine = document.createElement('div');
+                wordLine.className = 'word-line';
+                
+                for (let i = 0; i < word.length; i++) {
+                    const char = word[i];
+                    
+                    // Add letter
+                    const charElement = document.createElement('div');
+                    charElement.className = 'word-char';
+                    
+                    if (guessedLetters.includes(char) || char === '-') {
+                        charElement.textContent = char;
+                        // If game is won, make letters black
+                        if (gameOver && checkWinCondition()) {
+                            charElement.classList.add('correct');
+                        } else {
+                            charElement.style.color = '#ffffff';
+                        }
+                    } else {
+                        charElement.textContent = '_';
+                        charElement.style.color = '#ffffff';
+                    }
+                    
+                    wordLine.appendChild(charElement);
+                }
+                
+                wordDisplay.appendChild(wordLine);
+            });
+            
+            // Check if the player has won
+            if (checkWinCondition() && !gameOver) {
+                gameOver = true;
+                document.getElementById('message').textContent = 'Excellent! You identified the nursing technology concept!';
+                document.getElementById('message').className = 'message win';
+                disableAllKeys();
+                
+                // Make all letters black when won
+                const wordChars = document.querySelectorAll('.word-char');
+                wordChars.forEach(char => {
+                    if (char.textContent !== '_') {
+                        char.classList.add('correct');
+                    }
+                });
+            }
+        }
+        
+        // Check win condition
+        function checkWinCondition() {
+            const cleanWord = currentWord.replace(/-/g, '');
+            for (let char of cleanWord) {
+                if (char !== ' ' && !guessedLetters.includes(char)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        // Update the wrong letters display
+        function updateWrongLetters() {
+            const wrongLettersElement = document.getElementById('wrong-letters');
+            if (wrongLetters.length === 0) {
+                wrongLettersElement.textContent = 'Wrong letters: None yet';
+            } else {
+                wrongLettersElement.textContent = `Wrong letters: ${wrongLetters.join(', ')}`;
+            }
+        }
+        
+        // Update the Jenga tower based on wrong guesses
+        function updateJenga() {
+            // Show block markers for removed blocks
+            for (let i = 0; i < wrongGuesses; i++) {
+                const blockMarker = document.querySelector(`.block${i + 1}`);
+                if (blockMarker) {
+                    blockMarker.classList.add('visible');
+                }
+            }
+            
+            // Redraw tower with missing blocks
+            drawJengaTower();
+            
+            // Show collapsed tower with scattered bricks when it falls
+            if (wrongGuesses >= maxWrongGuesses) {
+                document.getElementById('jenga-collapsed').classList.add('visible');
+            }
+        }
+        
+        // Create the keyboard
+        function createKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            keyboard.innerHTML = '';
+            
+            // Create keys for A-Z
+            for (let i = 65; i <= 90; i++) {
+                const letter = String.fromCharCode(i);
+                const key = document.createElement('button');
+                key.className = 'key';
+                key.textContent = letter;
+                key.dataset.letter = letter;
+                key.addEventListener('click', () => handleGuess(letter));
+                keyboard.appendChild(key);
+            }
+        }
+        
+        // Update the keyboard based on guessed letters
+        function updateKeyboard() {
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => {
+                const letter = key.dataset.letter;
+                
+                if (guessedLetters.includes(letter) || wrongLetters.includes(letter)) {
+                    key.disabled = true;
+                    
+                    if (currentWord.includes(letter)) {
+                        key.classList.add('correct');
+                    } else {
+                        key.classList.add('wrong');
+                    }
+                } else {
+                    key.disabled = false;
+                    key.classList.remove('correct', 'wrong');
+                }
+            });
+        }
+        
+        // Handle a letter guess
+        function handleGuess(letter) {
+            if (gameOver) return;
+            
+            // Check if the letter was already guessed
+            if (guessedLetters.includes(letter) || wrongLetters.includes(letter)) {
+                return;
+            }
+            
+            // Check if the letter is in the word
+            if (currentWord.includes(letter)) {
+                // Correct guess
+                guessedLetters.push(letter);
+            } else {
+                // Wrong guess
+                wrongLetters.push(letter);
+                wrongGuesses++;
+                
+                // Update wrong guess count
+                document.getElementById('wrong-count').textContent = wrongGuesses;
+                
+                // Check if the player has lost
+                if (wrongGuesses >= maxWrongGuesses) {
+                    gameOver = true;
+                    document.getElementById('message').textContent = `Game Over! The answer is: TECH-ENHANCED NURSE TRAINING`;
+                    document.getElementById('message').className = 'message lose';
+                    disableAllKeys();
+                    
+                    // Reveal all letters when lost and make them red
+                    const wordChars = document.querySelectorAll('.word-char');
+                    let charIndex = 0;
+                    wordParts.forEach(word => {
+                        for (let i = 0; i < word.length; i++) {
+                            wordChars[charIndex].textContent = word[i];
+                            wordChars[charIndex].classList.add('revealed');
+                            charIndex++;
+                        }
+                    });
+                }
+            }
+            
+            // Update the UI
+            updateWordDisplay();
+            updateWrongLetters();
+            updateJenga();
+            updateKeyboard();
+        }
+        
+        // Disable all keyboard keys
+        function disableAllKeys() {
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => {
+                key.disabled = true;
+            });
+        }
+        
+        // Provide a hint (reveal a random letter)
+        function provideHint() {
+            if (gameOver) return;
+            
+            // Find letters that haven't been guessed yet (excluding spaces and hyphens)
+            const unguessedLetters = [];
+            for (let letter of currentWord) {
+                if (letter !== ' ' && letter !== '-' && !guessedLetters.includes(letter) && !unguessedLetters.includes(letter)) {
+                    unguessedLetters.push(letter);
+                }
+            }
+            
+            // If all letters are guessed, no hint needed
+            if (unguessedLetters.length === 0) return;
+            
+            // Select a random unguessed letter
+            const hintLetter = unguessedLetters[Math.floor(Math.random() * unguessedLetters.length)];
+            
+            // Add it to guessed letters
+            guessedLetters.push(hintLetter);
+            
+            // Update the UI
+            updateWordDisplay();
+            updateKeyboard();
+            
+            // Show a message
+            document.getElementById('message').textContent = `Hint revealed: "${hintLetter}"`;
+            document.getElementById('message').className = 'message';
+            
+            // Remove the message after 2 seconds
+            setTimeout(() => {
+                if (!gameOver) {
+                    document.getElementById('message').textContent = '';
+                    document.getElementById('message').className = 'message';
+                }
+            }, 2000);
+        }
+        
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize canvas
+            canvas = document.getElementById('jengaCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size - larger to accommodate bigger blocks
+            canvas.width = 290;
+            canvas.height = 290;
+            
+            // Create the keyboard
+            createKeyboard();
+            
+            // Initialize the game
+            initGame();
+            
+            // Add event listeners to buttons
+            document.getElementById('reset-btn').addEventListener('click', initGame);
+            document.getElementById('hint-btn').addEventListener('click', provideHint);
+            
+            // Add keyboard event listener for letter keys
+            document.addEventListener('keydown', (e) => {
+                // Only process letter keys
+                if (e.keyCode >= 65 && e.keyCode <= 90) {
+                    const letter = e.key.toUpperCase();
+                    handleGuess(letter);
+                }
+                
+                // Spacebar for new game
+                if (e.keyCode === 32 && gameOver) {
+                    initGame();
+                }
+                
+                // H key for hint
+                if (e.keyCode === 72 && !gameOver) {
+                    provideHint();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
